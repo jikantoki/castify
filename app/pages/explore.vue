@@ -2,10 +2,10 @@
 .explore-page-root
   //- ページヘッダー
   .explore-header.px-4.pt-4.pb-2
-    .d-flex.align-center.justify-space-between.mb-2
+    .d-flex.align-center.justify-space-between.mb-2(style="flex-direction: column; text-align: center;")
       .header-title-wrap
         h1.text-h5.font-weight-bold おすすめチャンネル
-        p.text-caption.text-medium-emphasis 公式・厳選されたラジオ番組
+        p.text-caption.text-medium-emphasis.mb-2 公式・厳選されたラジオ番組
       .d-flex.align-center.gap-2
         //- グリッド / リスト切り替え
         v-btn-toggle(
@@ -320,10 +320,14 @@ function isInPlaylist(channel: ChannelItem): boolean {
 async function togglePlaylist(channel: ChannelItem) {
   if (isInPlaylist(channel)) {
     stationsStore.removeFromPlaylist(channel.id)
-    await Toast.show({ text: `${channel.station.name} をプレイリストから削除しました` })
+    await Toast.show({
+      text: `${channel.station.name} をプレイリストから削除しました`,
+    })
   } else {
     stationsStore.addToPlaylist(channel)
-    await Toast.show({ text: `${channel.station.name} をプレイリストに追加しました` })
+    await Toast.show({
+      text: `${channel.station.name} をプレイリストに追加しました`,
+    })
   }
 }
 
@@ -520,7 +524,8 @@ async function togglePlayStation(channel: ChannelItem) {
   cursor: pointer;
   background-color: rgb(var(--v-theme-surface));
   border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease,
+    border-color 0.15s ease, background-color 0.15s ease;
   overflow: hidden;
 
   &:hover {

@@ -162,6 +162,8 @@ export const useStationsStore = defineStore('stations', {
         this.isInitialized = true
       } catch (err) {
         console.warn('[stationsStore] initFromStorage error:', err)
+      } finally {
+        this.isInitialized = true
       }
     },
 
