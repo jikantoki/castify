@@ -11,6 +11,46 @@ export const DEFAULT_RECOMMENDED_DOMAINS = [
   'https://cast.architectural-n.net',
 ]
 
+const STORAGE_KEY_PLAYLIST = 'castify_playlist_v1'
+const STORAGE_KEY_DOMAINS = 'castify_custom_domains_v1'
+const STORAGE_KEY_FAVORITES = 'castify_favorites_v1'
+
+/**
+ * 永続化保存用にチャンネルデータを軽量化（巨大な過去履歴などを削る）
+ */
+function sanitizeChannelForStorage(ch: ChannelItem): ChannelItem {
+  return {
+    id: ch.id,
+    domain: ch.domain,
+    station: ch.station,
+    isCustomDomain: ch.isCustomDomain,
+    addedAt: ch.addedAt,
+    isFavorite: ch.isFavorite,
+    nowPlaying: ch.nowPlaying
+      ? {
+          ...ch.nowPlaying,
+          // 過去履歴はローカルストレージ肥大化を防ぐため直近3件のみ保持
+          song_history: (ch.nowPlaying.song_history || []).slice(0, 3),
+        }
+      : null,
+  }
+}
+
+/**
+ * localStorage への直接書き込み
+ */
+function saveStateToStorage(customDomains: string[], playlist: ChannelItem[], favorites: string[]) {
+  if (typeof window === 'undefined') return
+  try {
+    localStorage.setItem(STORAGE_KEY_DOMAINS, JSON.stringify(customDomains))
+    localStorage.setItem(STORAGE_KEY_FAVORITES, JSON.stringify(favorites))
+    const sanitized = playlist.map(sanitizeChannelForStorage)
+    localStorage.setItem(STORAGE_KEY_PLAYLIST, JSON.stringify(sanitized))
+  } catch (err) {
+    console.warn('[stationsStore] Failed to save state to localStorage:', err)
+  }
+}
+
 interface StationsState {
   recommendedDomains: string[]
   customDomains: string[]
@@ -21,6 +61,7 @@ interface StationsState {
   isLoadingCustom: boolean
   errorMessage: string | null
   lastUpdated: number
+  isInitialized: boolean
 }
 
 export const useStationsStore = defineStore('stations', {
@@ -34,6 +75,7 @@ export const useStationsStore = defineStore('stations', {
     isLoadingCustom: false,
     errorMessage: null,
     lastUpdated: 0,
+    isInitialized: false,
   }),
 
   getters: {
@@ -66,6 +108,65 @@ export const useStationsStore = defineStore('stations', {
   },
 
   actions: {
+    /**
+     * localStorage からプレイリスト・カスタムドメイン・お気に入りを復元
+     */
+    initFromStorage() {
+      if (typeof window === 'undefined') return
+
+      try {
+        // 1. カスタムドメイン復元
+        const rawDomains = localStorage.getItem(STORAGE_KEY_DOMAINS)
+        if (rawDomains) {
+          const parsed = JSON.parse(rawDomains)
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            this.customDomains = Array.from(new Set([...this.customDomains, ...parsed]))
+          }
+        }
+
+        // 2. お気に入り復元
+        const rawFavorites = localStorage.getItem(STORAGE_KEY_FAVORITES)
+        if (rawFavorites) {
+          const parsed = JSON.parse(rawFavorites)
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            this.favorites = Array.from(new Set([...this.favorites, ...parsed]))
+          }
+        }
+
+        // 3. プレイリスト復元
+        const rawPlaylist = localStorage.getItem(STORAGE_KEY_PLAYLIST)
+        if (rawPlaylist) {
+          const parsed = JSON.parse(rawPlaylist)
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            // 既存のプレイリストと重複排除しながら結合または設定
+            const map = new Map<string, ChannelItem>()
+            for (const item of parsed) {
+              if (item && item.id) {
+                map.set(item.id, item)
+              }
+            }
+            for (const item of this.playlist) {
+              if (item && item.id) {
+                map.set(item.id, item)
+              }
+            }
+            this.playlist = Array.from(map.values())
+          }
+        }
+
+        this.isInitialized = true
+      } catch (err) {
+        console.warn('[stationsStore] initFromStorage error:', err)
+      }
+    },
+
+    /**
+     * 現在の状態を localStorage に即時永続化
+     */
+    saveToStorage() {
+      saveStateToStorage(this.customDomains, this.playlist, this.favorites)
+    },
+
     /**
      * おすすめドメインからチャンネル全件を取得
      */
@@ -136,6 +237,9 @@ export const useStationsStore = defineStore('stations', {
           }
         }
 
+        // 保存
+        this.saveToStorage()
+
         this.isLoadingCustom = false
         return {
           success: true,
@@ -157,6 +261,7 @@ export const useStationsStore = defineStore('stations', {
       const normDomain = normalizeDomain(domain)
       this.customDomains = this.customDomains.filter((d) => d !== normDomain)
       this.playlist = this.playlist.filter((item) => item.domain !== normDomain)
+      this.saveToStorage()
     },
 
     /**
@@ -168,6 +273,7 @@ export const useStationsStore = defineStore('stations', {
           ...channel,
           addedAt: Date.now(),
         })
+        this.saveToStorage()
       }
     },
 
@@ -176,6 +282,7 @@ export const useStationsStore = defineStore('stations', {
      */
     removeFromPlaylist(channelId: string) {
       this.playlist = this.playlist.filter((item) => item.id !== channelId)
+      this.saveToStorage()
     },
 
     /**
@@ -188,6 +295,7 @@ export const useStationsStore = defineStore('stations', {
       } else {
         this.favorites.push(channelId)
       }
+      this.saveToStorage()
     },
 
     /**
@@ -213,11 +321,13 @@ export const useStationsStore = defineStore('stations', {
           console.error(`プレイリスト更新エラー (${dom}):`, e)
         }
       }
+      // 最新の nowPlaying 情報を保存
+      this.saveToStorage()
     },
   },
 
   persist: {
-    // customDomains, playlist, favorites をローカルストレージに永続化
+    key: 'castify_stations_pinia',
     pick: ['customDomains', 'playlist', 'favorites'],
   },
 })

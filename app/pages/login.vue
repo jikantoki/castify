@@ -149,7 +149,8 @@ export default {
         })
         .catch((error: any) => {
           console.error(error)
-          this.errorMessage = '通信エラーが発生しました。接続を確認してください。'
+          this.errorMessage =
+            '通信エラーが発生しました。接続を確認してください。'
           this.loading = false
         })
     },
@@ -196,7 +197,8 @@ export default {
         })
         .catch((error: any) => {
           console.error(error)
-          this.errorMessage = '通信エラーが発生しました。接続を確認してください。'
+          this.errorMessage =
+            '通信エラーが発生しました。接続を確認してください。'
           this.loadingToken = false
         })
     },

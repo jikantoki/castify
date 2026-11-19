@@ -260,13 +260,17 @@ const snackbarText = ref('')
 const snackbarColor = ref('success')
 
 onMounted(async () => {
-  // 初回起動時、プレイリストが空の場合はおすすめステーションをロード
-  if (stationsStore.recommendedStations.length === 0) {
-    await stationsStore.loadRecommendedStations()
-  }
-  // プレイリストの最新曲情報・アルバムアートを更新
+  // localStorage から確実に最新のプレイリストをロード
+  stationsStore.initFromStorage()
+
+  // プレイリストが存在する場合は最新曲情報・アルバムアートを更新
   if (stationsStore.playlist.length > 0) {
     stationsStore.refreshPlaylistNowPlaying()
+  }
+
+  // おすすめステーションが未ロードの場合はバックグラウンドで取得
+  if (stationsStore.recommendedStations.length === 0) {
+    await stationsStore.loadRecommendedStations()
   }
 })
 

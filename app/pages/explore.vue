@@ -162,6 +162,7 @@ const searchQuery = ref('')
 const selectedDomain = ref<string>('all')
 
 onMounted(async () => {
+  stationsStore.initFromStorage()
   await stationsStore.loadRecommendedStations()
 })
 

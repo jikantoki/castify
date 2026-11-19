@@ -16,6 +16,11 @@ export default defineNuxtConfig({
     'vuetify-nuxt-module',
   ],
 
+  // Pinia 永続化ストレージを Cookie から localStorage に変更（容量制限4KBの回避とネイティブ/Web対応）
+  piniaPersistedstate: {
+    storage: 'localStorage',
+  },
+
   devtools: { enabled: true },
 
   // 最新の日付に更新

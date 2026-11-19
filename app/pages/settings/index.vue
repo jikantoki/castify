@@ -43,13 +43,13 @@ v-card(
         .icon
           v-icon mdi-information-outline
         .text
-          p.title About (テンプレート情報)
-          p.description バージョン、技術スタック、ガイド
+          p.title About
+          p.description バージョン、技術スタック、製作者情報
 
       //- 4. 利用規約
       .setting-item(
         v-ripple
-        @click="$router.push('/terms')"
+        @click="a('https://enoki.xyz/terms')"
       )
         .icon
           v-icon mdi-file-document-outline
@@ -60,7 +60,7 @@ v-card(
       //- 5. プライバシーポリシー
       .setting-item(
         v-ripple
-        @click="$router.push('/privacy')"
+        @click="a('https://enoki.xyz/privacy')"
       )
         .icon
           v-icon mdi-shield-lock-outline
@@ -83,11 +83,11 @@ v-card(
           p.description Android 15ステータスバー切り欠き設定など
 
       //- 7. アカウント・ログイン関連
-      .setting-item(
+      //.setting-item(
         v-if="myProfile.guest"
         v-ripple
         @click="$router.push('/login')"
-      )
+        )
         .icon(
           style="background-color: rgba(var(--v-theme-primary), 0.15); color: rgb(var(--v-theme-primary));"
         )
@@ -96,11 +96,11 @@ v-card(
           p.title ログイン
           p.description アカウントでログイン
 
-      .setting-item(
+      //.setting-item(
         v-else
         v-ripple
         @click="$router.push('/settings/profile')"
-      )
+        )
         .icon(
           style="background-color: rgba(var(--v-theme-primary), 0.15); color: rgb(var(--v-theme-primary));"
         )

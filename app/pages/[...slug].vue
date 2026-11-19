@@ -165,15 +165,15 @@ const currentPath = computed(() => {
 const quickLinks = [
   {
     title: 'ホーム',
-    description: 'トップ・ウェルカム画面へ戻る',
+    description: 'トップ画面へ戻る',
     path: '/',
     icon: 'mdi-home',
     color: '#00dc82',
     bg: 'rgba(0, 220, 130, 0.15)',
   },
   {
-    title: 'About (テンプレート情報)',
-    description: '機能紹介・技術スタック・利用ガイド',
+    title: 'About',
+    description: '機能紹介・技術スタック・製作者情報',
     path: '/about',
     icon: 'mdi-information-outline',
     color: '#38bdf8',
