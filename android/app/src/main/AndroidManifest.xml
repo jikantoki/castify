@@ -35,9 +35,6 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
 
-    <!-- カメラ権限の宣言 -->
-    <uses-permission android:name="android.permission.CAMERA" />
-
     <!-- カメラが必須ではない場合（オプション） -->
     <uses-feature android:name="android.hardware.camera" android:required="false" />
 </manifest>

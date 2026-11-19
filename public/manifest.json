@@ -2,13 +2,18 @@
   "short_name": "Castify",
   "name": "Castify - つなぐ、ひろがる、あなただけの電波",
   "display": "standalone",
-  "display_override": ["standalone"],
+  "display_override": [
+    "standalone"
+  ],
   "lang": "ja-JP",
   "start_url": "/",
   "id": "/",
   "background_color": "#000000",
   "theme_color": "#000000",
-  "categories": ["utilities", "productivity"],
+  "categories": [
+    "utilities",
+    "productivity"
+  ],
   "icons": [
     {
       "src": "../icons/icon-48.webp",
@@ -61,13 +66,13 @@
     },
     {
       "src": "img/thumbnail.jpg",
-      "sizes": "4096x2304",
+      "sizes": "1920x1080",
       "type": "image/jpeg",
       "form_factor": "wide"
     },
     {
       "src": "img/thumbnail.jpg",
-      "sizes": "4096x2304",
+      "sizes": "1920x1080",
       "type": "image/jpeg",
       "form_factor": "narrow"
     }

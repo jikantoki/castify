@@ -101,6 +101,12 @@ div
             @click="goTo('/')"
           )
           v-list-item.item(
+            prepend-icon="mdi-swap-vertical"
+            title="プレイリストの並び替え・削除"
+            subtitle="チャンネルの順番変更や整理"
+            @click="goTo('/playlist/edit')"
+          )
+          v-list-item.item(
             prepend-icon="mdi-compass-outline"
             title="おすすめチャンネル"
             subtitle="厳選されたラジオ番組"

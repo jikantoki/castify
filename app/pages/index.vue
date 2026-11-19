@@ -1,14 +1,13 @@
 <template lang="pug">
 .home-page-root
   //- ヘッダーバー
-  .home-header.px-4.pt-4.pb-3
+  .home-header.px-4.pt-4.pb-1
     .d-flex.align-center.justify-space-between
       .brand-wrap.d-flex.align-center.gap-2
-        v-avatar(color="primary" size="36")
-          v-icon(color="white" icon="mdi-radio-tower")
+        img(src="/icon.png" style="height: 3em; border-radius: 9999px;")
         div
           h1.text-h6.font-weight-bold Castify
-          p.text-caption.text-primary.font-weight-medium つなぐ、ひろがる、あなただけの電波。
+          p.text-caption.text-primary.font-weight-medium.mb-2 つなぐ、ひろがる、あなただけの電波。
 
   //- メインコンテンツ
   .home-content.px-4.pb-16
@@ -34,6 +33,17 @@
         v-icon(icon="mdi-playlist-music" color="primary")
         h2.text-subtitle-1.font-weight-bold マイプレイリスト ({{ stationsStore.playlist.length }})
       .d-flex.align-center.gap-2
+        //- 順番変更画面への遷移ボタン
+        v-btn(
+          v-if="stationsStore.playlist.length > 0"
+          variant="tonal"
+          color="primary"
+          density="compact"
+          size="small"
+          rounded="pill"
+          prepend-icon="mdi-swap-vertical"
+          @click="$router.push('/playlist/edit')"
+        ) 順番変更
         //- グリッド / リスト切り替え
         v-btn-toggle(
           v-if="stationsStore.playlist.length > 0"
@@ -138,15 +148,6 @@
                   :title="isFavorite(item) ? 'お気に入り解除' : 'お気に入りに追加'"
                   @click="toggleFavorite(item)"
                 )
-                v-btn(
-                  icon="mdi-delete-outline"
-                  variant="text"
-                  density="compact"
-                  size="small"
-                  color="medium-emphasis"
-                  title="プレイリストから削除"
-                  @click="removeItem(item)"
-                )
 
     //- プレイリスト一覧（リスト表示）
     .playlist-list-wrap.mt-1(v-else-if="stationsStore.playlist.length > 0 && viewMode === 'list'")
@@ -230,15 +231,6 @@
               size="small"
               :title="isFavorite(item) ? 'お気に入り解除' : 'お気に入りに追加'"
               @click="toggleFavorite(item)"
-            )
-            v-btn(
-              icon="mdi-delete-outline"
-              variant="text"
-              density="compact"
-              size="small"
-              color="medium-emphasis"
-              title="プレイリストから削除"
-              @click="removeItem(item)"
             )
 
     //- 空状態
@@ -505,13 +497,6 @@ async function toggleFavorite(item: ChannelItem) {
   })
 }
 
-async function removeItem(item: ChannelItem) {
-  stationsStore.removeFromPlaylist(item.id)
-  await Toast.show({
-    text: `${item.station.name} をプレイリストから削除しました`,
-  })
-}
-
 async function playItem(item: ChannelItem) {
   await playerStore.playChannel(item, stationsStore.playlist)
   router.push('/player')
@@ -713,7 +698,8 @@ async function togglePlayItem(item: ChannelItem) {
   cursor: pointer;
   background-color: rgb(var(--v-theme-surface));
   border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease,
+    border-color 0.15s ease, background-color 0.15s ease;
   overflow: hidden;
 
   &:hover {

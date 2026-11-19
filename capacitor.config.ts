@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli'
 
 const config: CapacitorConfig = {
-  appId: 'com.tokienoki.castify',
+  appId: 'xyz.enoki.castify',
   appName: 'Castify',
   webDir: 'dist',
   plugins: {

@@ -1,4 +1,4 @@
-package com.example.nuxt4capacitortemplate2026;
+package xyz.enoki.castify;
 
 import android.os.Bundle;
 import android.view.WindowManager;

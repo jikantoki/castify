@@ -338,6 +338,50 @@ export const useStationsStore = defineStore('stations', {
     },
 
     /**
+     * プレイリスト全体を新しい順番で上書き
+     */
+    reorderPlaylist(newPlaylist: ChannelItem[]) {
+      this.playlist = [...newPlaylist]
+      this.saveToStorage()
+    },
+
+    /**
+     * プレイリスト内のアイテムを別の位置へ移動
+     */
+    movePlaylistItem(fromIndex: number, toIndex: number) {
+      if (
+        fromIndex < 0 ||
+        fromIndex >= this.playlist.length ||
+        toIndex < 0 ||
+        toIndex >= this.playlist.length ||
+        fromIndex === toIndex
+      ) {
+        return
+      }
+      const item = this.playlist.splice(fromIndex, 1)[0]
+      this.playlist.splice(toIndex, 0, item)
+      this.saveToStorage()
+    },
+
+    /**
+     * アイテムを1つ上に移動
+     */
+    moveItemUp(index: number) {
+      if (index > 0) {
+        this.movePlaylistItem(index, index - 1)
+      }
+    },
+
+    /**
+     * アイテムを1つ下に移動
+     */
+    moveItemDown(index: number) {
+      if (index < this.playlist.length - 1) {
+        this.movePlaylistItem(index, index + 1)
+      }
+    },
+
+    /**
      * お気に入りの切り替え
      */
     toggleFavorite(channelId: string) {
