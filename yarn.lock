@@ -367,6 +367,11 @@
   resolved "https://registry.yarnpkg.com/@capacitor/toast/-/toast-8.0.1.tgz#2326e203594c4ed0e19305053d8ce1dd97cb63e2"
   integrity sha512-0uoyftoAeFjtOMiozBo7YXEo+zcpQCAxtBONSvrljJ05SKdlb1A8OFHaV/DZfIpGt+19kzUGaEaUemLdll4wUw==
 
+"@capgo/capacitor-media-session@^8.1.11":
+  version "8.1.11"
+  resolved "https://registry.yarnpkg.com/@capgo/capacitor-media-session/-/capacitor-media-session-8.1.11.tgz#b050588026278cfe149e6351152f17faf483459d"
+  integrity sha512-xrk/nALOI2l8sLPQcgcaBbgCfpa9oZFr469TAul/hi64Jwn3L8PPQ9UlX7gLV0cN2DP+Z51jUdmJQBSgKiYCpg==
+
 "@clack/core@1.5.1":
   version "1.5.1"
   resolved "https://registry.yarnpkg.com/@clack/core/-/core-1.5.1.tgz#2a071e7f47c2875814da8069ebb8100ac042d7aa"

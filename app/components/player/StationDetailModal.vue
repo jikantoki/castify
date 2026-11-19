@@ -40,7 +40,7 @@ v-dialog(
         | 局情報
 
     //- コンテンツ
-    v-card-text.pa-4.modal-body(style="max-height: 75vh; overflow-y: auto;")
+    v-card-text.pa-4.modal-body(style="max-height: 75vh; overflow-y: auto;max-width: 100dvw;")
       v-window(v-model="activeTab")
 
         //- 1. 現在の配信 (now)
@@ -58,7 +58,7 @@ v-dialog(
               .text-caption 配信者: {{ liveInfo.streamer_name || 'DJ' }}
 
             //- 現在の曲カード
-            .d-flex.align-center.gap-4.mb-4.pa-3.rounded-lg.bg-surface-variant
+            .d-flex.align-center.gap-4.mb-4.pa-3.rounded-lg.bg-surface-variant(style="background: rgba(var(--v-theme-on-surface), 0.2);")
               v-avatar(size="80" rounded="lg" elevation="2")
                 v-img(
                   :src="currentSong.art || '/thumbnail.jpg'"
@@ -66,16 +66,16 @@ v-dialog(
                 )
               .flex-grow-1(style="min-width: 0;")
                 .text-caption.text-primary.font-weight-bold NOW PLAYING
-                .text-h6.font-weight-bold.text-truncate {{ currentSong.title || 'タイトルなし' }}
-                .text-subtitle-2.text-medium-emphasis.text-truncate {{ currentSong.artist || 'アーティスト不明' }}
-                .text-caption.text-disabled.text-truncate(v-if="currentSong.album") {{ currentSong.album }}
+                .text-h6.font-weight-bold.text-truncate(style="overflow: hidden") {{ currentSong.title || 'タイトルなし' }}
+                .text-subtitle-2.text-medium-emphasis.text-truncate(style="overflow: hidden") {{ currentSong.artist || 'アーティスト不明' }}
+                .text-caption.text-disabled.text-truncate(v-if="currentSong.album" style="overflow: hidden;") {{ currentSong.album }}
 
             //- 詳細スペックリスト
             v-list(density="compact" lines="one" bg-color="transparent")
               v-list-item(prepend-icon="mdi-music-box-outline")
                 v-list-item-title ジャンル
                 template(#append)
-                  span.text-caption.text-medium-emphasis {{ currentSong.genre || '未設定' }}
+                  span.text-caption.text-medium-emphasis(style="max-width: 50vw; max-height: 8em; overflow: auto;") {{ currentSong.genre || '未設定' }}
               v-list-item(prepend-icon="mdi-account-group-outline")
                 v-list-item-title リスナー数
                 template(#append)
@@ -98,7 +98,7 @@ v-dialog(
               | AzuraCastのキューに基づき、次に再生が予定されている楽曲です。
 
             div(v-if="nextSong")
-              .d-flex.align-center.gap-4.pa-3.rounded-lg.bg-surface-variant.mb-4
+              .d-flex.align-center.gap-4.pa-3.rounded-lg.bg-surface-variant.mb-4(style="background: rgba(var(--v-theme-on-surface), 0.2);")
                 v-avatar(size="72" rounded="lg" elevation="2")
                   v-img(
                     :src="nextSong.art || '/thumbnail.jpg'"
@@ -119,7 +119,7 @@ v-dialog(
                 v-list-item(v-if="nextSong.genre" prepend-icon="mdi-tag-outline")
                   v-list-item-title ジャンル
                   template(#append)
-                    span.text-caption {{ nextSong.genre }}
+                    span.text-caption(style="max-width: 50vw; max-height: 8em; overflow: auto;")  {{ nextSong.genre }}
                 v-list-item(v-if="playingNextItem?.playlist" prepend-icon="mdi-playlist-music")
                   v-list-item-title プレイリスト
                   template(#append)
@@ -245,13 +245,23 @@ const isMobile = computed(() => {
 })
 
 const np = computed(() => props.nowPlayingDetail)
-const station = computed<Partial<AzuraCastStation>>(() => np.value?.station || {})
+const station = computed<Partial<AzuraCastStation>>(
+  () => np.value?.station || {},
+)
 const currentSongItem = computed(() => np.value?.now_playing)
-const currentSong = computed<Partial<AzuraCastSong>>(() => np.value?.now_playing?.song || {})
-const liveInfo = computed<Partial<AzuraCastLive>>(() => np.value?.live || { is_live: false, streamer_name: '' })
-const listeners = computed(() => np.value?.listeners || { current: 0, unique: 0, total: 0 })
+const currentSong = computed<Partial<AzuraCastSong>>(
+  () => np.value?.now_playing?.song || {},
+)
+const liveInfo = computed<Partial<AzuraCastLive>>(
+  () => np.value?.live || { is_live: false, streamer_name: '' },
+)
+const listeners = computed(
+  () => np.value?.listeners || { current: 0, unique: 0, total: 0 },
+)
 const playingNextItem = computed(() => np.value?.playing_next)
-const nextSong = computed<Partial<AzuraCastSong> | null>(() => np.value?.playing_next?.song || null)
+const nextSong = computed<Partial<AzuraCastSong> | null>(
+  () => np.value?.playing_next?.song || null,
+)
 const songHistory = computed(() => np.value?.song_history || [])
 
 function close() {

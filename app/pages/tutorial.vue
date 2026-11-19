@@ -6,7 +6,6 @@
   .tutorial-header.d-flex.align-center.justify-space-between.px-4.py-3
     .d-flex.align-center.gap-2
       v-btn(
-        v-if="isFromSettings || currentPage > 0"
         icon="mdi-arrow-left"
         variant="text"
         density="comfortable"
@@ -286,6 +285,7 @@ export default {
     return {
       settings: useSettingsStore(),
       currentPage: 0,
+      onBackButton: null as ((e: Event) => void) | null,
     }
   },
   computed: {
@@ -302,6 +302,16 @@ export default {
   },
   mounted() {
     this.setTitle('チュートリアル')
+    this.onBackButton = (e: Event) => {
+      e.preventDefault()
+      this.handleBackOrPrev()
+    }
+    window.addEventListener('castify:backbutton', this.onBackButton)
+  },
+  beforeUnmount() {
+    if (this.onBackButton) {
+      window.removeEventListener('castify:backbutton', this.onBackButton)
+    }
   },
   watch: {
     currentPage() {
@@ -327,7 +337,7 @@ export default {
     handleBackOrPrev() {
       if (this.currentPage > 0) {
         this.currentPage--
-      } else if (this.isFromSettings) {
+      } else {
         this.finishTutorial()
       }
     },
