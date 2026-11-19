@@ -17,13 +17,25 @@
       .header-title-wrap
         .header-sub-text 再生中のチャンネル
         .header-main-text.text-truncate {{ currentStationName }}
-      v-btn(
-        icon="mdi-information-outline"
-        variant="text"
-        density="comfortable"
-        size="large"
-        @click="openDetailModal"
-      )
+      .header-actions.d-flex.align-center
+        v-btn(
+          icon="mdi-information-outline"
+          variant="text"
+          density="comfortable"
+          size="large"
+          title="詳細情報"
+          aria-label="詳細情報"
+          @click="openDetailModal"
+        )
+        v-btn(
+          icon="mdi-share-variant-outline"
+          variant="text"
+          density="comfortable"
+          size="large"
+          title="チャンネルを共有"
+          aria-label="チャンネルを共有"
+          @click="shareCurrentStation"
+        )
 
     //- 巨大アートワークセクション
     .artwork-section
@@ -169,10 +181,12 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { Toast } from '@capacitor/toast'
+import { Share } from '@capacitor/share'
 import { usePlayerStore } from '@/stores/player'
 import { useStationsStore } from '@/stores/stations'
 import { useSettingsStore } from '@/stores/settings'
 import StationDetailModal from '@/components/player/StationDetailModal.vue'
+import { getStationShareUrl } from '@/utils/url'
 
 const router = useRouter()
 const playerStore = usePlayerStore()
@@ -218,6 +232,33 @@ function goBack() {
 
 function openDetailModal() {
   detailModalOpen.value = true
+}
+
+async function shareCurrentStation() {
+  if (!playerStore.currentChannel) {
+    await Toast.show({ text: 'ステーションが選択されていません' })
+    return
+  }
+
+  const station = playerStore.currentChannel.station
+  // 共有タイトル: チャンネル名
+  const title = station?.name || currentStationName.value || 'Castify'
+  // 共有URL: https://ドメイン/public/チャンネルスラッグ/
+  const shareUrl = getStationShareUrl(playerStore.currentChannel.domain, station?.shortcode)
+
+  try {
+    await Share.share({
+      title,
+      text: `${title} を聴こう`,
+      url: shareUrl,
+      dialogTitle: `${title} を共有`,
+    })
+  } catch (e) {
+    if (navigator.clipboard) {
+      await navigator.clipboard.writeText(shareUrl)
+      await Toast.show({ text: '共有リンクをコピーしました' })
+    }
+  }
 }
 
 async function toggleFavorite() {
@@ -315,11 +356,18 @@ function formatDuration(sec: number): string {
   height: 44px;
   flex-shrink: 0;
 
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+
   .header-title-wrap {
     text-align: center;
     min-width: 0;
     flex-grow: 1;
-    margin: 0 10px;
+    margin: 0 8px;
 
     .header-sub-text {
       font-size: 0.68rem;

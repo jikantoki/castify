@@ -148,6 +148,20 @@ div
             subtitle="友だちにCastifyを共有"
             @click="shareSite"
           )
+          v-list-item.item(
+            v-if="isWeb && isMobileDevice"
+            prepend-icon="mdi-google-play"
+            title="公式Androidアプリ"
+            subtitle="Google Play で入手"
+            @click="openUrl('https://play.google.com/store/apps/details?id=xyz.enoki.castify')"
+          )
+          v-list-item.item(
+            v-if="isWeb && !isMobileDevice"
+            prepend-icon="mdi-laptop"
+            title="デスクトップ版をインストール"
+            subtitle="PWAアプリとして追加"
+            @click="promptPwaInstall"
+          )
 </template>
 
 <script lang="ts">
@@ -155,6 +169,8 @@ import { Share } from '@capacitor/share'
 import { Toast } from '@capacitor/toast'
 import { Browser } from '@capacitor/browser'
 import { Capacitor } from '@capacitor/core'
+import { getAppBaseUrl } from '@/utils/url'
+import { pwaInstallPrompt, isPwaInstalled } from '@/plugins/pwa-prompt.client'
 import { useSettingsStore } from '@/stores/settings'
 import { useMyProfileStore } from '@/stores/myProfile'
 import { useNavigationStore } from '@/stores/navigation'
@@ -208,6 +224,17 @@ export default {
     isMobile(): boolean {
       return Boolean(this.$vuetify?.display?.xs)
     },
+    isWeb(): boolean {
+      return !Capacitor.isNativePlatform() && !isPwaInstalled.value
+    },
+    isMobileDevice(): boolean {
+      if (typeof window === 'undefined') return false
+      const ua = navigator.userAgent || ''
+      return (
+        /Android|iPhone|iPad|iPod|Mobile/i.test(ua) ||
+        Boolean(this.$vuetify?.display?.smAndDown)
+      )
+    },
   },
   methods: {
     openOptions() {
@@ -233,21 +260,34 @@ export default {
         window.open(url, '_blank', 'noopener,noreferrer')
       }
     },
+    async promptPwaInstall() {
+      this.optionsDialog = false
+      if (pwaInstallPrompt.value) {
+        pwaInstallPrompt.value.prompt()
+        await pwaInstallPrompt.value.userChoice
+        pwaInstallPrompt.value = null
+      } else {
+        await Toast.show({
+          text: 'ブラウザのアドレスバーのインストールボタンから追加できます',
+        })
+      }
+    },
     async shareSite() {
       this.optionsDialog = false
       const title = 'Castify - つなぐ、ひろがる、あなただけの電波。'
       const text =
         'AzuraCastのラジオチャンネルをSpotify風UIで快適に聴ける次世代プレイヤー'
+      const url = getAppBaseUrl()
       try {
         await Share.share({
           title,
           text,
-          url: window.location.origin,
+          url,
           dialogTitle: 'Castifyをシェア',
         })
       } catch (e) {
         if (navigator.clipboard) {
-          await navigator.clipboard.writeText(window.location.origin)
+          await navigator.clipboard.writeText(url)
           await Toast.show({ text: 'リンクをコピーしました' })
         }
       }

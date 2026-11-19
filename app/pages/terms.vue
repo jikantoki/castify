@@ -223,6 +223,7 @@ v-card.terms-page-root(
 import { Browser } from '@capacitor/browser'
 import { Share } from '@capacitor/share'
 import { Toast } from '@capacitor/toast'
+import { getAppShareUrl } from '@/utils/url'
 import { useSettingsStore } from '@/stores/settings'
 import Setup from '@/js/setup'
 import mixins from '@/mixins/mixins'
@@ -267,16 +268,17 @@ export default {
       }
     },
     async sharePage() {
+      const shareUrl = getAppShareUrl('/terms')
       try {
         await Share.share({
           title: '利用規約',
           text: '利用規約ページです。',
-          url: window.location.href,
+          url: shareUrl,
           dialogTitle: '共有',
         })
       } catch {
         if (navigator.clipboard) {
-          await navigator.clipboard.writeText(window.location.href)
+          await navigator.clipboard.writeText(shareUrl)
           await Toast.show({ text: 'URLをコピーしました' })
         }
       }

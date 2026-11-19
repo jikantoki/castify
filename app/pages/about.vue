@@ -26,6 +26,7 @@ v-card.about-page-root(
 <script lang="ts">
 import { Share } from '@capacitor/share'
 import { Toast } from '@capacitor/toast'
+import { getAppShareUrl } from '@/utils/url'
 import AboutView from '@/components/about/AboutView.vue'
 import { useSettingsStore } from '@/stores/settings'
 import Setup from '@/js/setup'
@@ -71,16 +72,17 @@ export default {
       }
     },
     async sharePage() {
+      const shareUrl = getAppShareUrl('/about')
       try {
         await Share.share({
           title: 'About - Castify',
           text: 'このアプリについて',
-          url: window.location.href,
+          url: shareUrl,
           dialogTitle: '共有',
         })
       } catch {
         if (navigator.clipboard) {
-          await navigator.clipboard.writeText(window.location.href)
+          await navigator.clipboard.writeText(shareUrl)
           await Toast.show({ text: 'URLをコピーしました' })
         }
       }

@@ -11,6 +11,9 @@
 
   //- メインコンテンツ
   .home-content.px-4.pb-16
+    //- Web版プロモーションバナー（PC: PWA, スマホ: アプリストア）
+    AppPromotionBanner
+
     //- カスタムドメイン管理バー（カスタムドメインがある場合）
     .custom-domains-bar.mb-4(v-if="stationsStore.customDomains.length > 0")
       .text-caption.text-medium-emphasis.mb-1 登録済みカスタムドメイン
@@ -387,6 +390,7 @@ import { usePlayerStore } from '@/stores/player'
 import { useSettingsStore } from '@/stores/settings'
 import type { ChannelItem } from '@/types/azuracast'
 import { getChannelArtUrl } from '@/utils/azuracast'
+import AppPromotionBanner from '@/components/common/AppPromotionBanner.vue'
 
 const router = useRouter()
 const stationsStore = useStationsStore()

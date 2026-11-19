@@ -116,6 +116,7 @@ v-dialog(
 import { Browser } from '@capacitor/browser'
 // import { Clipboard } from '@capacitor/clipboard'
 import { Share } from '@capacitor/share'
+import { getAppBaseUrl } from '@/utils/url'
 import QRCode from 'qrcode'
 import { QrcodeStream } from 'vue-qrcode-reader'
 
@@ -147,7 +148,7 @@ export default {
       handler: async function () {
         await setTimeout(() => {}, 50)
         this.qrLoading = true
-        this.myLink = `${window.location.origin}/user/${this.myProfile.userId}?openExternalBrowser=1`
+        this.myLink = `${getAppBaseUrl()}/user/${this.myProfile.userId}?openExternalBrowser=1`
 
         const canvas = document.querySelector('#qr-canvas') as any
         if (!canvas) {
