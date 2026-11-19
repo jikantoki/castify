@@ -44,6 +44,28 @@ v-card(
     .settings-list
       .setting-item
         .icon
+          v-icon mdi-view-dashboard-outline
+        .text
+          p.title チャンネル表示形式
+          p.description プレイリストやおすすめの表示スタイルを切り替えます
+      .setting-button-item.mb-4
+        .li(
+          v-ripple
+          :class="(settings.display.viewMode || 'grid') === 'grid' ? 'selected' : null"
+          @click="settings.setViewMode('grid')"
+          )
+          v-icon(size="x-large") mdi-view-grid
+          p グリッド
+        .li(
+          v-ripple
+          :class="settings.display.viewMode === 'list' ? 'selected' : null"
+          @click="settings.setViewMode('list')"
+          )
+          v-icon(size="x-large") mdi-view-list
+          p リスト
+    .settings-list
+      .setting-item
+        .icon
           v-icon mdi-translate-variant
         .text
           p.title 言語

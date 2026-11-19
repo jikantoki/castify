@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import type { ChannelItem } from '@/types/azuracast'
 import {
   fetchNowPlayingApi,
+  fetchSingleStationNowPlaying,
   convertNowPlayingToChannelItem,
   normalizeDomain,
 } from '@/utils/azuracast'
@@ -14,6 +15,8 @@ export const DEFAULT_RECOMMENDED_DOMAINS = [
 const STORAGE_KEY_PLAYLIST = 'castify_playlist_v1'
 const STORAGE_KEY_DOMAINS = 'castify_custom_domains_v1'
 const STORAGE_KEY_FAVORITES = 'castify_favorites_v1'
+
+let playlistAutoRefreshTimer: ReturnType<typeof setInterval> | null = null
 
 /**
  * 永続化保存用にチャンネルデータを軽量化（巨大な過去履歴などを削る）
@@ -59,6 +62,7 @@ interface StationsState {
   recommendedStations: ChannelItem[]
   isLoadingRecommended: boolean
   isLoadingCustom: boolean
+  isRefreshingPlaylist: boolean
   errorMessage: string | null
   lastUpdated: number
   isInitialized: boolean
@@ -73,6 +77,7 @@ export const useStationsStore = defineStore('stations', {
     recommendedStations: [],
     isLoadingRecommended: false,
     isLoadingCustom: false,
+    isRefreshingPlaylist: false,
     errorMessage: null,
     lastUpdated: 0,
     isInitialized: false,
@@ -198,18 +203,61 @@ export const useStationsStore = defineStore('stations', {
     },
 
     /**
-     * 好きなAzuraCastドメインを入力して、そのドメインの全チャンネルをプレイリストに追加
+     * 好きなAzuraCastドメインを入力して、チャンネルをプレイリストに追加
+     * チャンネルスラッグが指定されている場合はそのステーションのみを直接検索して取得
      */
-    async addCustomDomain(domainInput: string): Promise<{ success: boolean; message: string; count: number }> {
+    async addCustomDomain(
+      domainInput: string,
+      channelSlug?: string
+    ): Promise<{ success: boolean; message: string; count: number }> {
       const normDomain = normalizeDomain(domainInput)
       if (!normDomain) {
         return { success: false, message: '有効なURLまたはドメイン名を入力してください', count: 0 }
       }
 
+      const trimmedSlug = channelSlug?.trim()
+
       this.isLoadingCustom = true
       this.errorMessage = null
 
       try {
+        if (trimmedSlug) {
+          // チャンネルスラッグ指定時: 単一ステーションを直接取得（非公開・限定チャンネル対応）
+          const np = await fetchSingleStationNowPlaying(normDomain, trimmedSlug)
+          if (!np || !np.station) {
+            this.isLoadingCustom = false
+            return {
+              success: false,
+              message: `スラッグ「${trimmedSlug}」のステーションが見つかりませんでした`,
+              count: 0,
+            }
+          }
+
+          if (!this.customDomains.includes(normDomain) && !this.recommendedDomains.includes(normDomain)) {
+            this.customDomains.push(normDomain)
+          }
+
+          const channel = convertNowPlayingToChannelItem(np, normDomain, true)
+          const existingIndex = this.playlist.findIndex((item) => item.id === channel.id)
+          if (existingIndex >= 0) {
+            this.playlist[existingIndex] = {
+              ...this.playlist[existingIndex],
+              ...channel,
+            }
+          } else {
+            this.playlist.push(channel)
+          }
+
+          this.saveToStorage()
+          this.isLoadingCustom = false
+          return {
+            success: true,
+            message: `チャンネル「${channel.station.name}」(${trimmedSlug}) をプレイリストに追加しました！`,
+            count: 1,
+          }
+        }
+
+        // スラッグ未指定時: 全ステーションを一括取得
         const npList = await fetchNowPlayingApi(normDomain)
         if (npList.length === 0) {
           this.isLoadingCustom = false
@@ -248,7 +296,11 @@ export const useStationsStore = defineStore('stations', {
         }
       } catch (err: any) {
         this.isLoadingCustom = false
-        const msg = err?.message || 'ドメインの検証・接続に失敗しました'
+        const rawMsg = err?.message || ''
+        let msg = rawMsg || 'ドメインの検証・接続に失敗しました'
+        if (trimmedSlug && (rawMsg.includes('404') || rawMsg.includes('リクエスト失敗'))) {
+          msg = `スラッグ「${trimmedSlug}」のステーションが見つかりませんでした。スラッグ名やドメインが正しいかご確認ください。`
+        }
         this.errorMessage = msg
         return { success: false, message: msg, count: 0 }
       }
@@ -302,27 +354,75 @@ export const useStationsStore = defineStore('stations', {
      * プレイリスト内の全チャンネルの最新 now_playing 情報を再取得
      */
     async refreshPlaylistNowPlaying() {
-      // プレイリストに含まれるドメイン一覧
-      const domains = Array.from(new Set(this.playlist.map((ch) => ch.domain)))
-      for (const dom of domains) {
-        try {
-          const npList = await fetchNowPlayingApi(dom)
-          const map = new Map(npList.map((np) => [np.station.id, np]))
-          for (let i = 0; i < this.playlist.length; i++) {
-            if (this.playlist[i].domain === dom) {
-              const fresh = map.get(this.playlist[i].station.id)
-              if (fresh) {
-                this.playlist[i].nowPlaying = fresh
-                this.playlist[i].station = fresh.station
+      if (this.playlist.length === 0 || this.isRefreshingPlaylist) return
+      this.isRefreshingPlaylist = true
+
+      try {
+        // プレイリストに含まれるドメイン一覧
+        const domains = Array.from(new Set(this.playlist.map((ch) => ch.domain)))
+        for (const dom of domains) {
+          try {
+            const npList = await fetchNowPlayingApi(dom)
+            const map = new Map(npList.map((np) => [np.station.id, np]))
+            for (let i = 0; i < this.playlist.length; i++) {
+              if (this.playlist[i].domain === dom) {
+                let fresh = map.get(this.playlist[i].station.id)
+                if (!fresh) {
+                  // 公開ステーション一覧にない場合の個別取得フォールバック
+                  try {
+                    const shortcode =
+                      this.playlist[i].station.shortcode ||
+                      String(this.playlist[i].station.id)
+                    fresh = await fetchSingleStationNowPlaying(dom, shortcode)
+                  } catch {
+                    // ignore
+                  }
+                }
+                if (fresh) {
+                  this.playlist[i] = {
+                    ...this.playlist[i],
+                    nowPlaying: fresh,
+                    station: fresh.station || this.playlist[i].station,
+                  }
+                }
               }
             }
+          } catch (e) {
+            console.error(`プレイリスト更新エラー (${dom}):`, e)
           }
-        } catch (e) {
-          console.error(`プレイリスト更新エラー (${dom}):`, e)
         }
+        // 最新の nowPlaying 情報を保存
+        this.saveToStorage()
+      } finally {
+        this.isRefreshingPlaylist = false
       }
-      // 最新の nowPlaying 情報を保存
-      this.saveToStorage()
+    },
+
+    /**
+     * プレイリスト自動更新タイマーを開始（10秒ごとに最新再生内容を取得）
+     */
+    startPlaylistAutoRefresh() {
+      if (typeof window === 'undefined') return
+      if (playlistAutoRefreshTimer) {
+        clearInterval(playlistAutoRefreshTimer)
+        playlistAutoRefreshTimer = null
+      }
+
+      playlistAutoRefreshTimer = setInterval(async () => {
+        if (this.playlist.length > 0 && !this.isRefreshingPlaylist) {
+          await this.refreshPlaylistNowPlaying()
+        }
+      }, 10000)
+    },
+
+    /**
+     * プレイリスト自動更新タイマーを停止
+     */
+    stopPlaylistAutoRefresh() {
+      if (playlistAutoRefreshTimer) {
+        clearInterval(playlistAutoRefreshTimer)
+        playlistAutoRefreshTimer = null
+      }
     },
   },
 

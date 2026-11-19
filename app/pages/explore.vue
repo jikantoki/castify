@@ -6,13 +6,26 @@
       .header-title-wrap
         h1.text-h5.font-weight-bold おすすめチャンネル
         p.text-caption.text-medium-emphasis 公式・厳選されたラジオ番組
-      v-btn(
-        icon="mdi-refresh"
-        variant="tonal"
-        density="comfortable"
-        :loading="stationsStore.isLoadingRecommended"
-        @click="refresh"
-      )
+      .d-flex.align-center.gap-2
+        //- グリッド / リスト切り替え
+        v-btn-toggle(
+          v-model="viewMode"
+          mandatory
+          density="compact"
+          rounded="pill"
+          variant="outlined"
+          color="primary"
+          divided
+        )
+          v-btn(value="grid" icon="mdi-view-grid" size="x-small" title="グリッド表示" aria-label="グリッド表示")
+          v-btn(value="list" icon="mdi-view-list" size="x-small" title="リスト表示" aria-label="リスト表示")
+        v-btn(
+          icon="mdi-refresh"
+          variant="tonal"
+          density="comfortable"
+          :loading="stationsStore.isLoadingRecommended"
+          @click="refresh"
+        )
 
     //- 検索入力
     v-text-field.mt-2(
@@ -51,12 +64,12 @@
       v-col(cols="12" sm="6" md="4" v-for="i in 4" :key="i")
         v-skeleton-loader(type="card-avatar, text, text")
 
-    //- チャンネル一覧
-    v-row.mt-2(v-else-if="filteredStations.length > 0")
+    //- チャンネル一覧（グリッド表示）
+    v-row.mt-2(v-else-if="filteredStations.length > 0 && viewMode === 'grid'")
       v-col(
         cols="6"
         sm="4"
-        md="3"
+        md="2"
         v-for="channel in filteredStations"
         :key="channel.id"
       )
@@ -130,8 +143,88 @@
                   variant="text"
                   density="compact"
                   size="small"
+                  :title="isInPlaylist(channel) ? 'プレイリストから削除' : 'プレイリストに追加'"
                   @click.stop="togglePlaylist(channel)"
                 )
+
+    //- チャンネル一覧（リスト表示）
+    .explore-list-wrap.mt-2(v-else-if="filteredStations.length > 0 && viewMode === 'list'")
+      v-card.explore-list-card.mb-2(
+        v-for="channel in filteredStations"
+        :key="channel.id"
+        variant="elevated"
+        elevation="1"
+        rounded="xl"
+        :class="{ 'playing-active': isCurrentlyPlaying(channel) }"
+        @click="playStation(channel)"
+      )
+        .d-flex.align-center.pa-3.gap-3
+          //- 1. アートワーク
+          .list-art-box
+            v-img.list-art-img(
+              :src="getChannelArtwork(channel)"
+              cover
+              aspect-ratio="1"
+              error-icon="mdi-radio-tower"
+            )
+              template(#placeholder)
+                .d-flex.align-center.justify-center.fill-height
+                  v-progress-circular(indeterminate color="primary" size="18")
+
+            //- ホバー/タップ用 再生オーバーレイ
+            .list-play-overlay
+              v-btn(
+                :icon="isCurrentlyPlaying(channel) && playerStore.isPlaying ? 'mdi-pause' : 'mdi-play'"
+                color="primary"
+                size="x-small"
+                elevation="3"
+                @click.stop="togglePlayStation(channel)"
+              )
+
+          //- 2. メタデータ
+          .list-meta-box.flex-grow-1.min-width-0
+            .d-flex.align-center.gap-2
+              span.list-status-dot(:class="channel.nowPlaying?.is_online !== false ? 'online' : 'offline'" :title="channel.nowPlaying?.is_online !== false ? 'LIVE' : 'OFFLINE'")
+              .song-title.font-weight-bold.text-truncate(title="曲名")
+                | {{ channel.nowPlaying?.now_playing?.song?.title || '配信中' }}
+
+            .song-artist.text-caption.text-medium-emphasis.text-truncate.mt-1(title="アーティスト")
+              | {{ channel.nowPlaying?.now_playing?.song?.artist || 'アーティスト不明' }}
+
+            .d-flex.align-center.gap-2.mt-1.flex-wrap
+              .channel-name.text-caption.text-disabled.text-truncate
+                v-icon.mr-1(size="12") mdi-radio-tower
+                | {{ channel.station.name }}
+              v-chip(
+                size="x-small"
+                color="primary"
+                variant="tonal"
+                density="compact"
+              ) {{ getDomainLabel(channel.domain) }}
+              span.list-listeners.text-caption.text-disabled.d-none.d-sm-inline-flex.align-center.gap-1(v-if="channel.nowPlaying?.listeners?.current !== undefined")
+                v-icon(size="12") mdi-account-group
+                | {{ channel.nowPlaying.listeners.current }}
+
+          //- 3. フッターアクション: 再生ボタン & プレイリスト追加ボタン
+          .list-actions.d-flex.align-center.gap-1.flex-shrink-0(@click.stop)
+            v-btn(
+              :icon="isCurrentlyPlaying(channel) && playerStore.isPlaying ? 'mdi-pause-circle' : 'mdi-play-circle'"
+              color="primary"
+              variant="text"
+              size="default"
+              density="comfortable"
+              :title="isCurrentlyPlaying(channel) && playerStore.isPlaying ? '一時停止' : '再生'"
+              @click.stop="togglePlayStation(channel)"
+            )
+            v-btn(
+              :icon="isInPlaylist(channel) ? 'mdi-playlist-check' : 'mdi-playlist-plus'"
+              :color="isInPlaylist(channel) ? 'primary' : 'medium-emphasis'"
+              variant="text"
+              density="comfortable"
+              size="small"
+              :title="isInPlaylist(channel) ? 'プレイリストから削除' : 'プレイリストに追加'"
+              @click.stop="togglePlaylist(channel)"
+            )
 
     //- 該当なし
     .empty-state.text-center.py-12(v-else)
@@ -149,14 +242,24 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { Toast } from '@capacitor/toast'
 import { useStationsStore } from '@/stores/stations'
 import { usePlayerStore } from '@/stores/player'
+import { useSettingsStore } from '@/stores/settings'
 import type { ChannelItem } from '@/types/azuracast'
 import { getChannelArtUrl } from '@/utils/azuracast'
 
 const router = useRouter()
 const stationsStore = useStationsStore()
 const playerStore = usePlayerStore()
+const settingsStore = useSettingsStore()
+
+const viewMode = computed<'grid' | 'list'>({
+  get: () => settingsStore.display?.viewMode || 'grid',
+  set: (val: 'grid' | 'list') => {
+    settingsStore.setViewMode(val)
+  },
+})
 
 const searchQuery = ref('')
 const selectedDomain = ref<string>('all')
@@ -214,11 +317,13 @@ function isInPlaylist(channel: ChannelItem): boolean {
   return stationsStore.isInPlaylist(channel.id)
 }
 
-function togglePlaylist(channel: ChannelItem) {
+async function togglePlaylist(channel: ChannelItem) {
   if (isInPlaylist(channel)) {
     stationsStore.removeFromPlaylist(channel.id)
+    await Toast.show({ text: `${channel.station.name} をプレイリストから削除しました` })
   } else {
     stationsStore.addToPlaylist(channel)
+    await Toast.show({ text: `${channel.station.name} をプレイリストに追加しました` })
   }
 }
 
@@ -238,8 +343,35 @@ async function togglePlayStation(channel: ChannelItem) {
 
 <style scoped lang="scss">
 .explore-page-root {
-  min-height: 100%;
-  padding-bottom: 90px;
+  height: 100%;
+  height: 100dvh;
+  max-height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  box-sizing: border-box;
+
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--v-theme-on-surface), 0.2) transparent;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(var(--v-theme-on-surface), 0.2);
+    border-radius: 3px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: rgba(var(--v-theme-on-surface), 0.4);
+  }
+}
+
+.explore-content {
+  padding-bottom: 160px !important;
 }
 
 .domain-chips-wrap {
@@ -376,5 +508,107 @@ async function togglePlayStation(channel: ChannelItem) {
 
 .border-top-thin {
   border-top: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+}
+
+/* ================= リスト表示用スタイル ================= */
+.explore-list-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.explore-list-card {
+  cursor: pointer;
+  background-color: rgb(var(--v-theme-surface));
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+  overflow: hidden;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    background-color: rgba(var(--v-theme-on-surface), 0.02);
+  }
+
+  &.playing-active {
+    border: 1.5px solid rgb(var(--v-theme-primary));
+    box-shadow: 0 0 16px rgba(var(--v-theme-primary), 0.25);
+    background-color: rgba(var(--v-theme-primary), 0.04);
+  }
+}
+
+.list-art-box {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+
+  .list-art-img {
+    width: 100%;
+    height: 100%;
+    transition: transform 0.3s ease;
+  }
+
+  &:hover .list-art-img {
+    transform: scale(1.05);
+  }
+
+  .list-play-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  &:hover .list-play-overlay {
+    opacity: 1;
+  }
+}
+
+.list-meta-box {
+  min-width: 0;
+
+  .song-title {
+    font-size: 0.95rem;
+    line-height: 1.3;
+    color: rgb(var(--v-theme-on-surface));
+  }
+
+  .song-artist {
+    font-size: 0.8rem;
+    line-height: 1.2;
+  }
+
+  .channel-name {
+    font-size: 0.72rem;
+    display: flex;
+    align-items: center;
+  }
+}
+
+.list-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+
+  &.online {
+    background-color: rgb(var(--v-theme-primary));
+    box-shadow: 0 0 6px rgb(var(--v-theme-primary));
+  }
+
+  &.offline {
+    background-color: #888888;
+  }
+}
+
+.min-width-0 {
+  min-width: 0;
 }
 </style>

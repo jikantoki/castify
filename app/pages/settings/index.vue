@@ -35,7 +35,18 @@ v-card(
           p.title 通知
           p.description Web Push通知、プッシュ通知設定
 
-      //- 3. About
+      //- 3. チュートリアル
+      .setting-item(
+        v-ripple
+        @click="$router.push('/tutorial?from=settings')"
+      )
+        .icon
+          v-icon mdi-school-outline
+        .text
+          p.title チュートリアル
+          p.description アプリの使い方・基本操作ガイド
+
+      //- 4. About
       .setting-item(
         v-ripple
         @click="$router.push('/about')"
@@ -46,7 +57,7 @@ v-card(
           p.title About
           p.description バージョン、技術スタック、製作者情報
 
-      //- 4. 利用規約
+      //- 5. 利用規約
       .setting-item(
         v-ripple
         @click="a('https://enoki.xyz/terms')"
@@ -57,7 +68,7 @@ v-card(
           p.title 利用規約
           p.description サービスの利用条件
 
-      //- 5. プライバシーポリシー
+      //- 6. プライバシーポリシー
       .setting-item(
         v-ripple
         @click="a('https://enoki.xyz/privacy')"
@@ -68,7 +79,7 @@ v-card(
           p.title プライバシーポリシー
           p.description 個人情報の取り扱いについて
 
-      //- 6. 開発者オプション
+      //- 7. 開発者オプション
       .setting-item(
         v-if="settings.developerOptions.enabled"
         v-ripple
@@ -253,13 +264,13 @@ export default {
       flex: 1;
 
       .title {
-        font-size: 1.05em;
-        font-weight: 700;
+        font-size: 0.9em;
+        font-weight: 500;
         margin: 0 0 2px;
       }
 
       .description {
-        font-size: 0.85em;
+        font-size: 0.6em;
         opacity: 0.7;
         margin: 0;
       }

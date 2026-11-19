@@ -462,6 +462,18 @@ export const usePlayerStore = defineStore('player', {
         if (this.currentSongTitle !== oldTitle) {
           this.updateMediaSession()
         }
+
+        // stationsStore の playlist にも最新情報を同期
+        const stationsStore = useStationsStore()
+        const targetId = this.currentChannel.id
+        const pIdx = stationsStore.playlist.findIndex((item) => item.id === targetId)
+        if (pIdx >= 0) {
+          stationsStore.playlist[pIdx] = {
+            ...stationsStore.playlist[pIdx],
+            nowPlaying: detail,
+            station: detail.station || stationsStore.playlist[pIdx].station,
+          }
+        }
       } catch (e) {
         console.warn('NowPlaying detail refresh error:', e)
       }

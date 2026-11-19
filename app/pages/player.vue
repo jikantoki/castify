@@ -168,6 +168,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { Toast } from '@capacitor/toast'
 import { usePlayerStore } from '@/stores/player'
 import { useStationsStore } from '@/stores/stations'
 import { useSettingsStore } from '@/stores/settings'
@@ -219,18 +220,29 @@ function openDetailModal() {
   detailModalOpen.value = true
 }
 
-function toggleFavorite() {
+async function toggleFavorite() {
   if (playerStore.currentChannel) {
-    stationsStore.toggleFavorite(playerStore.currentChannel.id)
+    const id = playerStore.currentChannel.id
+    const name = playerStore.currentChannel.station.name
+    const willBeFav = !stationsStore.isFavorite(id)
+    stationsStore.toggleFavorite(id)
+    await Toast.show({
+      text: willBeFav
+        ? `${name} をお気に入りに追加しました`
+        : `${name} をお気に入りから解除しました`,
+    })
   }
 }
 
-function togglePlaylist() {
+async function togglePlaylist() {
   if (!playerStore.currentChannel) return
+  const name = playerStore.currentChannel.station.name
   if (isInPlaylist.value) {
     stationsStore.removeFromPlaylist(playerStore.currentChannel.id)
+    await Toast.show({ text: `${name} をプレイリストから削除しました` })
   } else {
     stationsStore.addToPlaylist(playerStore.currentChannel)
+    await Toast.show({ text: `${name} をプレイリストに追加しました` })
   }
 }
 

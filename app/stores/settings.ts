@@ -10,6 +10,8 @@ export const useSettingsStore = defineStore('settings', {
       language: '日本語' as const,
       /** Android等でアプリ起動中に画面をオフにしない */
       keepScreenOn: true,
+      /** チャンネル一覧の表示形式 (grid / list) */
+      viewMode: 'grid' as 'grid' | 'list',
     },
     /** 通知設定 */
     notification: {},
@@ -25,6 +27,26 @@ export const useSettingsStore = defineStore('settings', {
       /** AndroidかつVer.15以上で自動true */
       isAndroid15OrHigher: false,
     },
+    /** 初回起動チュートリアル閲覧フラグ */
+    hasSeenTutorial: false,
   }),
+  actions: {
+    /** チュートリアル完了状態にする */
+    setTutorialCompleted(completed = true) {
+      this.hasSeenTutorial = completed
+    },
+    /** チャンネル一覧の表示形式 (grid / list) を切り替え */
+    setViewMode(mode: 'grid' | 'list') {
+      if (!this.display) {
+        this.display = {
+          theme: 'system',
+          language: '日本語',
+          keepScreenOn: true,
+          viewMode: 'grid',
+        }
+      }
+      this.display.viewMode = mode
+    },
+  },
   persist: true,
 })

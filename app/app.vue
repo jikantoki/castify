@@ -4,8 +4,8 @@ v-app
   main(style="height: 100vh; height: 100dvh; min-width: 320px;")
     .status-bar-padding(:class="settings.hidden.isAndroid15OrHigher ? 'android-15-or-higher' : ''")
     NuxtPage(:style="settings.hidden.isAndroid15OrHigher ? 'height: calc(100vh - 40px - 16px); height: calc(100dvh - 40px - 16px);' : ''")
-    MiniPlayer(v-if="$route.path !== '/player'")
-    BottomNav(v-if="$route.path !== '/player'")
+    MiniPlayer(v-if="!['/player', '/tutorial'].includes($route.path)")
+    BottomNav(v-if="!['/player', '/tutorial'].includes($route.path)")
     .nav-bar-padding(:class="settings.hidden.isAndroid15OrHigher ? 'android-15-or-higher' : ''")
 </template>
 
@@ -19,7 +19,10 @@ import mixins from '@/mixins/mixins'
 import { useMyProfileStore } from '@/stores/myProfile'
 import { useSettingsStore } from '@/stores/settings'
 import { usePlayerStore } from '@/stores/player'
-import { applyKeepScreenOn, initKeepScreenOnWatcher } from '@/utils/keepScreenOn'
+import {
+  applyKeepScreenOn,
+  initKeepScreenOnWatcher,
+} from '@/utils/keepScreenOn'
 
 export default {
   name: 'App',
@@ -104,6 +107,11 @@ export default {
     // 画面常時点灯（スリープ防止）の適用とウォッチャー初期化
     applyKeepScreenOn(this.settings.display.keepScreenOn !== false)
     initKeepScreenOnWatcher(() => this.settings.display.keepScreenOn !== false)
+
+    // 初回起動時のチュートリアル自動案内
+    if (!this.settings.hasSeenTutorial && this.$route.path === '/') {
+      this.$router.replace('/tutorial')
+    }
 
     /**
      * mountedの最後に記述
@@ -386,10 +394,6 @@ $breakpoints: (
 
 .v-card-text {
   padding: 1em;
-}
-
-.v-responsive__sizer {
-  display: none;
 }
 
 .v-chip {

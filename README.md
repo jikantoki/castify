@@ -1,25 +1,24 @@
-# Castify
-
-## Nuxt4-Capacitor-Template-2026
+# Castify (キャスティファイ)
 
 <p align="center">
-  <img src="./public/icon.png" alt="Nuxt4-Capacitor-Template-2026 アイコン" width="128" height="128" style="border-radius: 28px;">
+  <img src="./public/icon.png" alt="Castify アイコン" width="128" height="128" style="border-radius: 28px; box-shadow: 0 8px 24px rgba(0,0,0,0.15);">
 </p>
 
 <p align="center">
-  <strong>Nuxt 4 + Capacitor 8 + PWA + Vuetify 3 + Custom CSS + PHP Backend</strong><br>
-  Web（PWA）およびモバイルアプリ（iOS / Android）を単一のコードベースから高速開発できる、2026年最新仕様のプロダクション対応テンプレートリポジトリです。
+  <strong>つなぐ、ひろがる、あなただけの電波。</strong><br>
+  <em>Tune into the Soundscape.</em><br>
+  オープンソースのインターネットラジオ配信スイート「AzuraCast」に対応した、洗練された次世代ストリーミングプレイヤー
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Nuxt-4.3+-00DC82?logo=nuxtdotjs&logoColor=white" alt="Nuxt 4">
+  <img src="https://img.shields.io/badge/Nuxt-4.x-00DC82?logo=nuxtdotjs&logoColor=white" alt="Nuxt 4">
   <img src="https://img.shields.io/badge/Vue.js-3.5+-4FC08D?logo=vuedotjs&logoColor=white" alt="Vue 3">
   <img src="https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white" alt="TypeScript">
   <img src="https://img.shields.io/badge/Vuetify-3.x-1867C0?logo=vuetify&logoColor=white" alt="Vuetify 3">
   <img src="https://img.shields.io/badge/Capacitor-8.x-119EFF?logo=capacitor&logoColor=white" alt="Capacitor 8">
   <img src="https://img.shields.io/badge/PWA-Enabled-5A0FC8?logo=pwa&logoColor=white" alt="PWA">
-  <img src="https://img.shields.io/badge/PHP-8.2+-777BB4?logo=php&logoColor=white" alt="PHP">
-  <img src="https://img.shields.io/badge/MySQL-5.7+-4479A1?logo=mysql&logoColor=white" alt="MySQL">
+  <img src="https://img.shields.io/badge/AzuraCast-Compatible-FF5722?logo=rss&logoColor=white" alt="AzuraCast Compatible">
+  <img src="https://img.shields.io/badge/Platform-Web%20%7C%20Android%20%7C%20iOS-brightgreen" alt="Platforms">
 </p>
 
 ---
@@ -28,177 +27,175 @@
 
 1. [概要](#概要)
 2. [主な機能・特徴](#主な機能特徴)
-3. [技術スタック](#技術スタック)
-4. [ページ・コンポーネント構成](#ページコンポーネント構成)
-5. [ディレクトリ構成](#ディレクトリ構成)
-6. [環境構築・クイックスタート](#環境構築クイックスタート)
+3. [初回起動チュートリアル & ガイド](#初回起動チュートリアル--ガイド)
+4. [使い方ガイド](#使い方ガイド)
+   - [1. おすすめチャンネルを探索する](#1-おすすめチャンネルを探索する)
+   - [2. 外部 AzuraCast サーバーを追加する（カスタムドメイン）](#2-外部-azuracast-サーバーを追加するカスタムドメイン)
+   - [3. マイプレイリスト & お気に入り管理](#3-マイプレイリスト--お気に入り管理)
+   - [4. Spotify風 プレイヤー & 配信履歴の確認](#4-spotify風-プレイヤー--配信履歴の確認)
+   - [5. チュートリアルを設定画面から再確認する](#5-チュートリアルを設定画面から再確認する)
+5. [技術スタック](#技術スタック)
+6. [ディレクトリ構成](#ディレクトリ構成)
+7. [環境構築・クイックスタート](#環境構築クイックスタート)
    - [前提条件](#前提条件)
    - [1. 依存パッケージのインストール](#1-依存パッケージのインストール)
-   - [2. 環境変数の設定 (.env)](#2-環境変数の設定-env)
-   - [3. バックエンド設定 (env.php) & データベース初期化](#3-バックエンド設定-envphp--データベース初期化)
-   - [4. 開発サーバーの起動](#4-開発サーバーの起動)
-7. [モバイルアプリ開発 (Capacitor 8)](#モバイルアプリ開発-capacitor-8)
-   - [Web アセットの生成とネイティブ同期](#web-アセットの生成とネイティブ同期)
-   - [Android Studio での実行・デバッグ](#android-studio-での実行デバッグ)
-   - [アイコン・スプラッシュ画像の自動生成](#アイコンスプラッシュ画像の自動生成)
-8. [カスタマイズガイド](#カスタマイズガイド)
-   - [アプリ名・パッケージ ID の変更](#アプリ名パッケージidの変更)
-   - [テーマカラー・フォントの調整](#テーマカラーフォントの調整)
-9. [ライセンス](#ライセンス)
+   - [2. 開発サーバーの起動](#2-開発サーバーの起動)
+   - [3. 本番ビルド & 静的書き出し](#3-本番ビルド--静的書き出し)
+8. [モバイルアプリ開発 (Capacitor 8)](#モバイルアプリ開発-capacitor-8)
+   - [Web アセットの同期](#web-アセットの同期)
+   - [Android 実機・エミュレータでのデバッグ](#android-実機エミュレータでのデバッグ)
+   - [Android 15 Edge-to-Edge 仕様](#android-15-edge-to-edge-仕様)
+9. [クリエイター・運営情報](#クリエイター運営情報)
+10. [ライセンス](#ライセンス)
 
 ---
 
 ## 概要
 
-**Nuxt4-Capacitor-Template-2026** は、次世代のマルチプラットフォームアプリケーション開発を最速で開始するために設計されたボイラープレートテンプレートです。
+**Castify（キャスティファイ）** は、世界中の [AzuraCast](https://www.azuracast.com/) インターネットラジオステーションを、どこでも最高の体験で楽しむためのクロスプラットフォーム音楽プレイヤーです。
 
-- **Web / PWA**: 最新の Nuxt 4 (app/ ディレクトリ構造) と Nitro エンジンによる高速 SSR / SSG、Service Worker によるオフライン対応
-- **Mobile (iOS / Android)**: Capacitor 8 による高品質なハイブリッドアプリ化。ステータスバー連動、Android 15 Edge-to-Edge（切り欠き・ノッチ）対応
-- **UI / デザイン**: Vuetify 3 (vuetify-nuxt-module) と統一フォント（Zen Maru Gothic）、SCSS レスポンシブミックスイン
-- **バックエンド**: 軽量で即座に動作する PHP 8.2+ REST API と MySQL データベーススキーマ（ユーザー認証、セッション管理、プロフィール、WebPush 通知、画像アップロード）
+Webブラウザ（PWA）およびスマートフォンアプリ（iOS / Android）に対応しており、会員登録やログインを必要とせず、アプリを開いた瞬間からクリアなストリーミング放送を楽しめます。
+
+- **途切れない音楽体験**: 画面遷移や別タブのブラウジング中も音楽が止まらないシングルトンオーディオエンジン
+- **自由につながるカスタム性**: 自身の AzuraCast サーバーや好きなコミュニティFMのドメインを追加して自分専用のステーション集を作成
+- **Spotify ライクな洗練された UI**: アンビエントグラデーション発光、リアルタイム楽曲情報・オンエア状況、配信履歴、Media Session API 完全連動
 
 ---
 
 ## 主な機能・特徴
 
-- **Nuxt 4 互換アーキテクチャ**
-  - `future.compatibilityVersion: 4` を有効化し、Nuxt 4 標準の `app/` ディレクトリ構造を採用
-  - Pinia 永続化ストア (`pinia-plugin-persistedstate`) によるセッション・設定の保持
-  - `@nuxtjs/i18n` による多言語化設定基盤
-- **Capacitor 8 ネイティブ統合**
-  - `@capacitor/core`, `@capacitor/android`, `@capacitor/status-bar`, `@capacitor/share`, `@capacitor/toast`, `@capacitor/camera`, `@capacitor/device` を標準搭載
-  - Android 15 の Edge-to-Edge 仕様に対応したステータスバー・ナビゲーションバーのパディング自動調整
-  - 開発者オプションによるステータスバーノッチの表示切り替えデバッグ機能
-- **PWA (Progressive Web App) 対応**
-  - Web App Manifest (`manifest.json`) と Service Worker (`sw.js`) によるブラウザ直接インストール対応
-  - `@ionic/pwa-elements` によるネイティブ風 UI ポリフィル
-  - Web Push 通知の受信・登録基盤
-- **モダンデザイン & カスタム CSS**
-  - Vuetify 3 マテリアルデザインコンポーネント & MDI アイコン (`@mdi/font`)
-  - システム設定連動のライト / ダークテーマ自動切り替え & StatusBar 連動
-  - 全体を丸ゴシック（Zen Maru Gothic）に統一
-  - モバイル・タブレット・PWA を識別する SCSS メディアクエリミックスイン (`@mixin mq`)
-- **洗練された標準 UI ページ**
-  - **ようこそ画面 (トップ)**: 主要機能の紹介カードと各画面へのクイックリンク
-  - **About ページ**: テンプレート概要、特徴、技術スタック、利用ガイド
-  - **設定ページ**: 外観（テーマ/言語）、通知、利用規約、プライバシーポリシー、開発者オプション、ログイン
-  - **ナビゲーションバー (BottomNav)**: 固定ボトムナビゲーションと「ようこそダイアログ」
-  - **スプラッシュ画面 (commonSplash)**: アプリ起動時のスムーズな初期化表示
-  - **QR コードスキャナー**: カメラを用いた QR コード読み取り画面
-  - **利用規約 & プライバシーポリシー**: アプリ公開に必須の規約テンプレート
-  - **サイバーパンク風 404 ページ**: ターミナル風自己診断コンソール付き 404 画面
-- **PHP REST API & MySQL バックエンド**
-  - API ID / Token / AccessKey によるセキュアな認証ヘッダー
-  - トークンベースのユーザー認証、管理者登録、パスワード再設定
-  - プロフィール管理 & 画像アップロード
-  - Web Push トークン管理・配信スクリプト
-  - `database.sql` によるワンクリック DB スキーマ作成
+| 機能 | 詳細説明 |
+| :--- | :--- |
+| 📻 **AzuraCast 連携** | AzuraCast REST API と Now Playing データをリアルタイム同期。曲名・アーティスト名・ジャケット写真・リスナー数をリアルタイム取得 |
+| 🌐 **カスタムドメイン対応** | 任意の AzuraCast サーバーURL（例: `https://radio.example.com`）を入力するだけで、全配信チャンネルを瞬時に自動インポート |
+| 🎵 **スマートミニプレイヤー** | どの画面に遷移しても画面下部に常駐し、再生・一時停止・トラック切り替えがシームレスに行える常駐プレイヤー |
+| 🎨 **Spotify風 UI** | アルバムアートワークに連動したアンビエント背景発光、LIVEバッジ、楽曲プログレス表示 |
+| 📜 **配信履歴 (History) モーダル** | 過去に流れた楽曲履歴（直近数曲）や次にオンエア予定のトラック（Next Up）、生配信中のDJ情報をいつでも確認可能 |
+| 📱 **Media Session API 連動** | Android の通知シェードやロック画面、PCメディアハブにアートワークと曲情報を表示。Bluetooth イヤホン等の物理キー操作に対応 |
+| 💡 **画面常時点灯（スリープ防止）** | ラジオをBGMとして据え置き再生する際に便利な、端末のスリープを防止するキープスクリーン機能 |
+| 🌓 **システム連動ダークモード** | OS の設定に応じたライト / ダークテーマ自動切り替え & ステータスバーカラー連動 |
+| 🚀 **Android 15 Edge-to-Edge** | 最新の Android 15 Edge-to-Edge 仕様に対応し、ノッチや切り欠き、ナビゲーションバーのパディングを自動最適化 |
+| 🔰 **初回起動チュートリアル** | 初めてアプリを使うユーザー向けのスライド式4ページチュートリアル。設定画面からいつでも再閲覧可能 |
+
+---
+
+## 初回起動チュートリアル & ガイド
+
+アプリを初めて起動した際、Castify の魅力と使い方をわかりやすく紹介する **4 ページ構成のチュートリアル** が自動で表示されます。
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      Castify チュートリアル                  │
+├─────────────────────────────────────────────────────────────┤
+│  [Page 1] ようこそ Castify へ                               │
+│           ・「つなぐ、ひろがる、あなただけの電波。」        │
+│           ・AzuraCast 専用プレイヤーの特徴と概要            │
+│                                                             │
+│  [Page 2] おすすめチャンネルを探索                          │
+│           ・リアルタイムなオンエア楽曲 & リスナー数         │
+│           ・ワンタップ即再生 & 途切れないミニプレイヤー     │
+│                                                             │
+│  [Page 3] 好きなサーバーを追加 (カスタムドメイン)           │
+│           ・自身の AzuraCast サーバーや外部 URL を入力      │
+│           ・チャンネル一覧の自動取得とマイプレイリスト登録  │
+│                                                             │
+│  [Page 4] 極上のリスニング体験                              │
+│           ・Spotify風 UI、配信履歴 & 次の曲確認             │
+│           ・通知バー/イヤホン操作、常時点灯、ダークモード   │
+│           ・「Castify をはじめる！」                        │
+└─────────────────────────────────────────────────────────────┘
+```
+
+- **スワイプ & ボタン操作**: 左右フリックや下部のインジケータードット、「前へ」「次へ」ボタンで快適にスライドを切り替えられます。
+- **いつでも再確認可能**: 一度スキップまたは完了した後でも、**設定画面からいつでも何度でも** 呼び出して閲覧できます。
+
+---
+
+## 使い方ガイド
+
+### 1. おすすめチャンネルを探索する
+1. ボトムナビゲーションの「**おすすめ**」アイコン（コンパス）をタップします。
+2. 公式・厳選された AzuraCast ステーションが一覧表示されます。
+3. リアルタイムの曲名、アーティスト名、アルバムジャケット、現在のリスナー数を確認できます。
+4. カードまたは再生ボタンをタップすると、即座にライブストリーミングが開始されます。
+
+### 2. 外部 AzuraCast サーバーを追加する（カスタムドメイン・非公開配信対応）
+1. ホーム（プレイリスト）画面右下の「**＋**」フローティングボタン（再生バーに被らない親切設計）をタップします。
+2. 追加したい AzuraCast サーバーの URL（例: `https://radio.example.com`）を入力します。
+3. （オプション）サーバー全体の公開一覧に出ない非公開・限定配信を登録したい場合は、**チャンネルスラッグ**を指定します。スラッグを指定すると、そのチャンネルのみを直接検索して登録できます。
+4. 「追加する」をタップすると、チャンネルがマイプレイリストに保存され、次回起動時もすぐに再生できます。
+
+### 3. マイプレイリスト & お気に入り管理
+- **ホーム画面**: 登録したすべてのチャンネルをグリッド表示で確認・再生できます。
+- **お気に入り（ハート）**: 各カードのハートアイコンをタップすると、お気に入りとしてマークされ、すばやくアクセスできます。
+- **削除**: 不要になったチャンネルはゴミ箱アイコンから簡単にプレイリストから除外できます。
+
+### 4. Spotify風 プレイヤー & 配信履歴の確認
+- 再生中に画面下部の「ミニプレイヤー」をタップすると、フルスクリーンプレイヤーが開きます。
+- **アンビエント発光**: アートワークの色合いに合わせて背景が美しくグラデーション発光します。
+- **情報アイコン（ⓘ）**: 右上のインフォメーションボタンをタップすると「ステーション詳細モーダル」が開き、以下を確認できます:
+  - 過去にオンエアされた楽曲履歴（Song History）
+  - 次に流れる予定のトラック（Next Up）
+  - 現在の配信ストリーム品質（ビットレート・コーデック）
+  - 生配信中のライブDJ情報
+
+### 5. チュートリアルを設定画面から再確認する
+1. ボトムナビゲーションの「**設定**」アイコン（歯車）をタップします。
+2. メニュー内の「**チュートリアル**（アプリの使い方・基本操作ガイド）」をタップします。
+3. いつでも初回起動時と同じ 4 ページのガイドを振り返ることができます。
+4. 右上の「×」ボタンまたは最終ページの「設定画面に戻る」をタップすると、スムーズに設定画面へ復帰します。
+   *(※ ボトムナビ右端の「その他」メニューからもチュートリアルを開くことができます)*
 
 ---
 
 ## 技術スタック
 
-| 分類                | 技術 / ライブラリ     | バージョン       | 用途                                            |
-| :------------------ | :-------------------- | :--------------- | :---------------------------------------------- |
-| **Framework**       | Nuxt                  | ^4.3.1           | フルスタック Web フレームワーク (Nuxt 4 モード) |
-| **Core UI**         | Vue.js                | ^3.5.0           | リアクティブ UI ライブラリ                      |
-| **Language**        | TypeScript            | ^5.x             | 型安全な開発言語                                |
-| **UI Component**    | Vuetify 3             | ^0.19.5 (Module) | マテリアルデザインコンポーネント                |
-| **Icons**           | Material Design Icons | ^7.4.47          | MDI アイコンフォント                            |
-| **Native Runtime**  | Capacitor             | ^8.1.0           | iOS / Android ネイティブアプリブリッジ          |
-| **State Store**     | Pinia                 | ^3.0.4           | 状態管理 & 永続化 (`persistedstate`)            |
-| **Template Syntax** | Pug                   | ^3.0.3           | 簡潔な HTML テンプレート記法                    |
-| **Styling**         | Sass (sass-embedded)  | ^1.97.3          | SCSS カスタムスタイル                           |
-| **Backend**         | PHP                   | 8.2+             | 軽量 REST API サーバー                          |
-| **Database**        | MySQL / MariaDB       | 5.7+ / 8.0+      | リレーショナルデータベース                      |
-
----
-
-## ページ・コンポーネント構成
-
-```
-app/
-├── app.vue                          # アプリケーションルート (共通レイアウト, テーマ連動, Android15ノッチ対応)
-├── error.vue                        # エラーハンドリング
-├── components/
-│   ├── about/
-│   │   └── AboutView.vue            # About コンポーネント (特徴, 技術スタック, ガイド)
-│   └── common/
-│       ├── BottomNav.vue            # ボトムナビゲーション & ようこそダイアログ
-│       └── commonSplash.vue         # 起動時スプラッシュ画面
-├── data/
-│   └── profile.ts                   # テンプレート情報・技術スタック定義
-├── js/
-│   ├── ajaxFunctions.ts             # Ajax 通信ユーティリティ
-│   ├── contentApi.ts                # PHP バックエンド通信クライアント
-│   ├── Functions.ts                 # 共通ヘルパー関数
-│   ├── indexedDb.ts                 # IndexedDB 永続化ヘルパー
-│   ├── metaFunctions.ts             # メタタグ操作
-│   ├── setup.ts                     # タイトル・OGP設定ヘルパー
-│   └── webpush.ts                   # WebPush 登録・購読ヘルパー
-├── mixins/
-│   └── mixins.ts                    # Vue 共通 Mixin (Cookie操作, AjaxWithAuth等)
-├── pages/
-│   ├── index.vue                    # ホーム・ようこそ画面 (機能紹介 & クイックリンク)
-│   ├── about.vue                    # About ページ (テンプレート情報)
-│   ├── login.vue                    # ログイン画面
-│   ├── registar.vue                 # 管理者アカウント作成画面
-│   ├── password_reset.vue           # パスワード再設定画面
-│   ├── privacy.vue                  # プライバシーポリシー
-│   ├── terms.vue                    # 利用規約
-│   ├── qrcode.vue                   # QRコードスキャナー画面
-│   ├── [...slug].vue                # 404 Not Found (サイバーパンク風診断UI)
-│   ├── profile/
-│   │   └── index.vue                # ユーザープロフィール画面
-│   ├── settings/
-│   │   ├── index.vue                # 設定トップ画面
-│   │   ├── display.vue              # 外観設定 (テーマ切り替え, 言語)
-│   │   ├── developer-options.vue    # 開発者オプション (ノッチ切り欠き強制制御)
-│   │   └── profile.vue              # プロフィール編集画面 (画像アップロード)
-│   └── user/
-│       └── [userId].vue             # 公開ユーザープロフィール画面
-└── stores/
-    ├── meta.ts                      # ページメタ情報ストア
-    ├── myProfile.ts                 # ログインユーザープロファイルストア (永続化)
-    ├── navigation.ts                # ナビゲーションダイアログ制御ストア
-    └── settings.ts                  # アプリ設定ストア (テーマ, ノッチフラグ, 永続化)
-```
+| 分類 | 技術 / ライブラリ | バージョン | 用途・特徴 |
+| :--- | :--- | :--- | :--- |
+| **Frontend** | [Nuxt 4](https://nuxt.com/) | `4.3.x+` (4.6) | Vue 3 + Vite ベースの最新フルスタックフレームワーク (`future.compatibilityVersion: 4`) |
+| **UI Framework** | [Vuetify 3](https://vuetifyjs.com/) | `3.7.x+` | Material Design 3 対応コンポーネントライブラリ (`vuetify-nuxt-module`) |
+| **Mobile Bridge** | [Capacitor](https://capacitorjs.com/) | `8.x` | Web アプリを Android / iOS ネイティブアプリとしてビルド・実行 |
+| **State Management** | [Pinia](https://pinia.vuejs.org/) | `3.x` | プレイヤー状態、プレイリスト、設定のリアクティブ管理 |
+| **Persistence** | `pinia-plugin-persistedstate` | `1.x` | 設定やカスタムドメイン、お気に入りを localStorage へ永続化 |
+| **Audio Engine** | HTML5 Audio + Media Session API | Web標準 | シングルトン再生、バックグラウンド再生、ロック画面コントロール |
+| **Font & Icons** | Zen Maru Gothic + MDI Font | - | 統一感のあるモダンな丸ゴシック体フォント & Material Design Icons |
+| **Styling** | Sass (SCSS) | Embedded | レスポンシブミックスイン (`@mixin mq`) によるモバイル・タブレット・PC最適化 |
 
 ---
 
 ## ディレクトリ構成
 
+Nuxt 4 標準の `app/` ディレクトリ構造を採用しています。
+
 ```
-.
-├── android/                         # Capacitor Android ネイティブプロジェクト
-├── app/                             # Nuxt 4 フロントエンドソース
-├── assets/                          # アイコン生成用元画像 (icon-only, icon-foreground, etc.)
-├── icons/                           # 各解像度アプリアイコン
-├── php/                             # PHP REST API バックエンド
-│   ├── functions/                   # 認証・DB・メール・Push通知ユーティリティ
-│   ├── public/                      # 静的公開ディレクトリ (uploads)
-│   ├── createTable.php              # テーブル作成スクリプト
-│   ├── authAccount.php              # アカウント認証 API
-│   ├── loginAccount.php             # ログイン API
-│   ├── logoutAccount.php            # ログアウト API
-│   ├── updateProfile.php            # プロフィール更新 API
-│   ├── uploadImage.php              # 画像アップロード API
-│   └── ...                          # プッシュ通知、パスワード再設定等の API
-├── public/                          # 静的公開ファイル (manifest.json, sw.js, style.css)
-├── server/                          # Nitro サーバーエンジンルート & API
-│   ├── api/
-│   │   └── upload-image.post.ts     # ローカル画像アップロード API
-│   ├── routes/
-│   │   ├── sitemap.xml.ts           # 動的サイトマップ生成
-│   │   └── rssfeed.xml.ts           # RSS 2.0 フィード生成
-│   └── utils/
-│       └── siteData.ts              # サイト共通ユーティリティ
-├── capacitor.config.ts              # Capacitor 設定ファイル
-├── database.sql                     # MySQL 初期化用 SQL スキーマ
-├── env.example.php                  # PHP バックエンド用環境変数テンプレート
-├── .env.example                     # フロントエンド用環境変数テンプレート
-├── nuxt.config.ts                   # Nuxt 設定ファイル
-└── package.json                     # プロジェクト定義 & スクリプト
+castify/
+├── app/                          # Nuxt 4 アプリケーションルート
+│   ├── app.vue                   # ルートコンポーネント（テーマ適用、常時点灯、初回起動判定）
+│   ├── components/               # Vue コンポーネント群
+│   │   ├── about/                # About ページ用ビュー
+│   │   ├── common/               # 共通コンポーネント（BottomNav, commonSplash）
+│   │   └── player/               # プレイヤー関連（MiniPlayer, StationDetailModal）
+│   ├── data/                     # 定数データ（profile.ts, templateInfo）
+│   ├── js/                       # ユーティリティ・API 連携スクリプト
+│   ├── mixins/                   # Vue ミックスイン
+│   ├── pages/                    # ページルーティング
+│   │   ├── index.vue             # ホーム（マイプレイリスト & ドメイン追加）
+│   │   ├── explore.vue           # おすすめチャンネル探索
+│   │   ├── player.vue            # Spotify風 フルスクリーンプレイヤー
+│   │   ├── tutorial.vue          # 初回起動・設定再呼び出し対応チュートリアル（4ページ）
+│   │   ├── about.vue             # アプリ概要・製作者情報
+│   │   └── settings/             # 設定画面群（外観、通知、開発者オプション等）
+│   ├── plugins/                  # Nuxt プラグイン（ストレージ復元、PWAエレメント等）
+│   ├── stores/                   # Pinia ストア（player, stations, settings, myProfile）
+│   ├── types/                    # TypeScript 型定義（azuracast.ts）
+│   └── utils/                    # 共通ユーティリティ（azuracast API, keepScreenOn 等）
+├── android/                      # Capacitor Android ネイティブプロジェクト
+├── assets/                       # SCSS スタイルシート、フォント
+├── public/                       # 静的アセット（アイコン、manifest.json、sw.js）
+├── capacitor.config.ts           # Capacitor 8 設定ファイル
+├── nuxt.config.ts                # Nuxt 4 設定ファイル
+├── package.json                  # パッケージ構成 & npm スクリプト
+└── README.md                     # 本ドキュメント
 ```
 
 ---
@@ -206,130 +203,91 @@ app/
 ## 環境構築・クイックスタート
 
 ### 前提条件
-
-- **Node.js**: `v20.x` または `v22.x` 以上推奨
-- **npm** / **yarn** / **pnpm**
-- **PHP**: `8.1` または `8.2+`（PHP バックエンドを使用する場合）
-- **MySQL**: `5.7+` または `8.0+`（PHP バックエンドを使用する場合）
-- **Android Studio**: Android アプリをビルドする場合
+- **Node.js**: `20.x` 以上（LTS 推奨）
+- **パッケージマネージャー**: `npm` または `yarn`
+- **Android Studio** (Android アプリをビルドする場合): 最新の Android SDK / Command-line Tools
 
 ### 1. 依存パッケージのインストール
 
 ```bash
+# yarn を使用する場合
+yarn install
+
+# または npm を使用する場合
 npm install
 ```
 
-### 2. フロントエンド環境変数の設定 (.env)
-
-ルートディレクトリに `.env` を作成します（`.env.example` をコピー）：
+### 2. 開発サーバーの起動
 
 ```bash
-cp .env.example .env
-```
-
-```ini
-# WebPush 設定（https://web-push-codelab.glitch.me/ 等で生成可能）
-NUXT_WEBPUSH_PUBLICKEY=
-NUXT_WEBPUSH_PRIVATEKEY=
-
-# API 接続設定 (同一オリジンの場合は空欄でも自動解決されます)
-NUXT_API_ID=default
-NUXT_API_TOKEN=
-NUXT_API_ACCESSKEY=
-NUXT_API_HOST=
-```
-
-### 3. バックエンド設定 (env.php) & データベース初期化
-
-1. `env.example.php` をコピーしてプロジェクトルートの上位ディレクトリ（または指定パス）に `env.php` を配置します：
-
-```bash
-cp env.example.php ../env.php
-```
-
-2. `MySQL_Host`, `MySQL_DBName`, `MySQL_User`, `MySQL_Password`, `Admin_Register_Key` を環境に合わせて設定します。
-3. MySQL に `database.sql` をインポートして初期テーブルを作成します：
-
-```bash
-mysql -u <ユーザー名> -p <データベース名> < database.sql
-```
-
-### 4. 開発サーバーの起動
-
-```bash
+# 開発サーバーを起動 (デフォルトポート: 10000)
 npm run dev
+# または
+yarn dev
 ```
 
-ブラウザで `http://localhost:10000` を開きます。
+ブラウザで `http://localhost:10000` を開くと、アプリが起動します。
+
+### 3. 本番ビルド & 静的書き出し
+
+```bash
+# SSR / Node 向けプロダクションビルド
+npm run build
+
+# Capacitor 用静的アセット生成 (dist / .output/public)
+npm run generate
+```
 
 ---
 
 ## モバイルアプリ開発 (Capacitor 8)
 
-本テンプレートは、Web 画面をそのまま iOS / Android ネイティブアプリとしてパッケージングできます。
+Castify は Capacitor 8 により、Web コードベースをそのままネイティブの Android / iOS アプリとして出力できます。
 
-### Web アセットの生成とネイティブ同期
+### Web アセットの同期
 
-```bash
-# 1. 静的 HTML/JS アセットを生成 (dist/ に出力)
-npm run generate
-
-# 2. 生成アセットを Capacitor ネイティブプロジェクトへ同期
-npx cap sync
-```
-
-※ または一括コマンド：
+フロントエンドの静的アセットを生成し、ネイティブプラットフォームと同期します。
 
 ```bash
+# nuxt generate を実行して native プロジェクトへ sync
 npm run cap:sync
 ```
 
-### Android Studio での実行・デバッグ
+### Android 実機・エミュレータでのデバッグ
 
 ```bash
+# Android Studio を起動
 npm run cap:open:android
 ```
 
-Android Studio が起動したら、エミュレータまたは実機端末を選択して `Run (Shift + F10)` を実行します。
+Android Studio が起動したら、上部の実行ボタン（▶）を押すだけで接続中の実機またはエミュレータにアプリがインストールされ、起動します。
 
-### アイコン・スプラッシュ画像の自動生成
-
-`assets/` ディレクトリに元画像を配置し、以下のコマンドを実行すると各解像度のアプリアイコンとスプラッシュ画面が自動生成されます：
-
-```bash
-npx @capacitor/assets generate
-```
+### Android 15 Edge-to-Edge 仕様
+Castify は Android 15 で強制適用される Edge-to-Edge 仕様に対応しています。
+- ステータスバーおよびナビゲーションバーの背後までコンテンツを描画しつつ、セーフエリア（ノッチ・カメラ切り欠き）のパディングを自動計算してレイアウト崩れを防止します。
+- 開発者オプション（`設定 > 開発者オプション`）から、ステータスバーノッチの表示シミュレーションを切り替えて動作確認が可能です。
 
 ---
 
-## カスタマイズガイド
+## クリエイター・運営情報
 
-### アプリ名・パッケージ ID の変更
+Castify は、オープンソースコミュニティとインターネットラジオ文化への敬意を込めて開発されています。
 
-新しいアプリを作成する際は、以下のファイルを検索・置換します：
+- **エノキ電気**
+  - 役割: アプリ開発 / サーバー・インフラ構築
+  - Webサイト: [https://enoki.xyz](https://enoki.xyz)
+  - 運営配信局: [radio.enoki.xyz](https://radio.enoki.xyz)
+  - 概要: Web・インフラ・アプリ開発、AI音楽制作などを手がける。
 
-1. **`capacitor.config.ts`**:
-   - `appId`: `'com.yourcompany.yourapp'`
-   - `appName`: `'Your App Name'`
-2. **`package.json`**:
-   - `name`: `'your-app-name'`
-3. **`android/app/build.gradle`**:
-   - `namespace = "com.yourcompany.yourapp"`
-   - `applicationId "com.yourcompany.yourapp"`
-4. **`android/app/src/main/res/values/strings.xml`**:
-   - `app_name`, `title_activity_main`, `package_name`
-5. **`public/manifest.json`**:
-   - `name`, `short_name`, `description`
-6. **`nuxt.config.ts`**:
-   - `app.head.title`, `app.head.meta`
-
-### テーマカラー・フォントの調整
-
-- **テーマカラー**: `app/app.vue` の `:root` および `.v-theme--light`, `.v-theme--dark` で `--v-theme-primary` の RGB 値を変更できます。
-- **フォント**: `nuxt.config.ts` の Google Fonts リンクおよび `app/app.vue` の `* { font-family: ... }` でお好みのフォントに変更可能です。
+- **ねるる**
+  - 役割: ラジオ配信 / コンテンツ・音楽制作
+  - Webサイト: [https://architectural-n.net](https://architectural-n.net)
+  - 運営配信局: [cast.architectural-n.net](https://cast.architectural-n.net)
+  - 概要: インターネットラジオ「ねるるラジオ」「ねるるの日常」等の配信およびオリジナル楽曲を制作。
 
 ---
 
 ## ライセンス
 
-MIT License
+本プロジェクトはオープンソースとして公開されています。
+詳細についてはリポジトリ内のライセンス条項をご確認ください。

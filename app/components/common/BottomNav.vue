@@ -113,6 +113,12 @@ div
             @click="goTo('/settings')"
           )
           v-list-item.item(
+            prepend-icon="mdi-school-outline"
+            title="チュートリアル"
+            subtitle="アプリの使い方・基本操作ガイド"
+            @click="goTo('/tutorial?from=options')"
+          )
+          v-list-item.item(
             prepend-icon="mdi-information-outline"
             title="About Castify"
             subtitle="アプリの機能や技術情報"
