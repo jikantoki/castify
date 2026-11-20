@@ -34,6 +34,7 @@ interface PlayerState {
   error: string | null
   playQueue: ChannelItem[]
   currentQueueIndex: number
+  isFullPlayerOpen: boolean
 }
 
 export const usePlayerStore = defineStore('player', {
@@ -50,6 +51,7 @@ export const usePlayerStore = defineStore('player', {
     error: null,
     playQueue: [],
     currentQueueIndex: -1,
+    isFullPlayerOpen: false,
   }),
 
   getters: {
@@ -125,6 +127,21 @@ export const usePlayerStore = defineStore('player', {
   },
 
   actions: {
+    /**
+     * フルスクリーンプレイヤーの表示/非表示制御
+     */
+    openFullPlayer() {
+      this.isFullPlayerOpen = true
+    },
+
+    closeFullPlayer() {
+      this.isFullPlayerOpen = false
+    },
+
+    toggleFullPlayer() {
+      this.isFullPlayerOpen = !this.isFullPlayerOpen
+    },
+
     /**
      * オーディオ初期化とイベントリスナーの設定
      */

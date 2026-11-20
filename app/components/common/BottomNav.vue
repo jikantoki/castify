@@ -56,7 +56,7 @@ div
       v-card-actions.dialog-header
         .d-flex.align-center.gap-2.ml-2
           v-icon(color="primary" icon="mdi-radio-tower")
-          p.dialog-title.font-weight-bold Castify へようこそ
+          p.dialog-title.font-weight-bold ようこそ
         v-spacer
         v-btn.dialog-close-btn(
           icon="mdi-close"
@@ -77,18 +77,6 @@ div
           .account-info
             h2.brand-title Castify
             p.brand-catchphrase つなぐ、ひろがる、あなただけの電波。
-            p.brand-subtext AzuraCast Internet Radio Player
-            .d-flex.justify-center.gap-1.mt-2
-              v-chip(
-                size="x-small"
-                color="primary"
-                variant="flat"
-              ) v1.0.0
-              v-chip(
-                size="x-small"
-                color="secondary"
-                variant="outlined"
-              ) Nuxt 4 × Capacitor
 
         v-divider.my-3
 
@@ -434,13 +422,12 @@ export default {
 
   .options-list {
     background: transparent;
-    padding: 0;
 
     .item {
       border-radius: 12px;
-      margin-bottom: 6px;
       cursor: pointer;
       transition: background-color 0.15s ease;
+      padding: 8px 0;
 
       &:hover {
         background-color: rgba(var(--v-theme-on-surface), 0.06);

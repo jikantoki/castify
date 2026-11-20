@@ -3,6 +3,7 @@ import { Capacitor } from '@capacitor/core'
 import { App } from '@capacitor/app'
 import { useNavigationStore } from '@/stores/navigation'
 import { useSettingsStore } from '@/stores/settings'
+import { usePlayerStore } from '@/stores/player'
 
 export default defineNuxtPlugin((nuxtApp) => {
   if (typeof window === 'undefined') return
@@ -19,6 +20,13 @@ export default defineNuxtPlugin((nuxtApp) => {
       // 1. 「Castify へようこそ」ダイアログ（その他ダイアログ）が開いている場合
       if (navStore.optionsDialog) {
         navStore.closeOptions()
+        return
+      }
+
+      // 2. フルスクリーンプレイヤーが開いている場合
+      const playerStore = usePlayerStore(pinia)
+      if (playerStore.isFullPlayerOpen) {
+        playerStore.closeFullPlayer()
         return
       }
 
@@ -64,6 +72,10 @@ export default defineNuxtPlugin((nuxtApp) => {
     const navStore = useNavigationStore(pinia)
     if (navStore.optionsDialog) {
       navStore.closeOptions()
+    }
+    const playerStore = usePlayerStore(pinia)
+    if (playerStore.isFullPlayerOpen) {
+      playerStore.closeFullPlayer()
     }
   })
 })

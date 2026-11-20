@@ -1,22 +1,23 @@
 <template lang="pug">
 .playlist-edit-root
   //- ヘッダーバー
-  .edit-header.px-4.pt-4.pb-3
-    .d-flex.align-center.justify-space-between
-      .d-flex.align-center.gap-2
+  .edit-header.px-3.px-sm-4.pt-4.pb-3
+    .d-flex.align-center.justify-space-between.gap-2
+      .header-title-box.d-flex.align-center.gap-2.flex-grow-1.min-width-0
         v-btn(
           icon="mdi-arrow-left"
           variant="text"
           density="comfortable"
+          class="flex-shrink-0"
           @click="$router.push('/')"
           title="プレイリストに戻る"
           aria-label="プレイリストに戻る"
         )
-        div
-          h1.text-h6.font-weight-bold プレイリストの並び替え・削除
-          p.text-caption.text-medium-emphasis 順番の変更や不要なチャンネルの削除を行えます
+        .header-texts.flex-grow-1.min-width-0
+          h1.text-subtitle-1.text-sm-h6.font-weight-bold.text-truncate プレイリストの並び替え・削除
+          p.text-caption.text-medium-emphasis.header-desc 順番の変更や不要なチャンネルの削除を行えます
 
-      v-btn(
+      v-btn.flex-shrink-0(
         color="primary"
         variant="flat"
         rounded="pill"
@@ -26,17 +27,17 @@
       ) 完了
 
   //- メインコンテンツエリア
-  .edit-content.px-4.pb-16
+  .edit-content.px-3.px-sm-4.pb-16
     //- サブ情報・ヒントバー
     .d-flex.align-center.justify-space-between.my-3.flex-wrap.gap-2
-      .d-flex.align-center.gap-2
+      .d-flex.align-center.gap-2.flex-shrink-0
         v-chip(
           size="small"
           color="primary"
           variant="tonal"
           prepend-icon="mdi-playlist-music"
         ) 全 {{ stationsStore.playlist.length }} チャンネル
-      .text-caption.text-disabled
+      .text-caption.text-disabled.hint-text.min-width-0
         v-icon.mr-1(size="14") mdi-information-outline
         | ドラッグまたは矢印ボタンで順番を移動できます
 
@@ -76,23 +77,23 @@
           elevation="1"
           rounded="xl"
         )
-          .d-flex.align-center.pa-3.gap-2
+          .d-flex.align-center.pa-2.pa-sm-3.gap-1.gap-sm-2
             //- ドラッグハンドル
-            .drag-handle-wrap.d-flex.align-center.justify-center.cursor-grab(
+            .drag-handle-wrap.d-flex.align-center.justify-center.cursor-grab.flex-shrink-0(
               title="ドラッグして並び替え"
             )
-              v-icon(color="medium-emphasis" size="22") mdi-drag-vertical
+              v-icon(color="medium-emphasis" size="20") mdi-drag-vertical
 
             //- インデックス番号バッジ
             v-avatar(
-              size="24"
+              size="22"
               color="primary"
               variant="tonal"
-              class="font-weight-bold text-caption mr-1"
+              class="font-weight-bold text-caption flex-shrink-0"
             ) {{ index + 1 }}
 
             //- サムネイル画像
-            v-avatar(size="44" rounded="lg" class="flex-shrink-0")
+            v-avatar(size="40" rounded="lg" class="flex-shrink-0")
               v-img(
                 :src="getItemArtwork(item)"
                 cover
@@ -104,20 +105,21 @@
 
             //- チャンネル名 & 情報
             .item-meta.flex-grow-1.min-width-0
-              .item-title.font-weight-bold.text-truncate(title="チャンネル名")
+              .item-title.font-weight-bold.text-truncate(:title="item.station.name")
                 | {{ item.station.name }}
-              .d-flex.align-center.gap-2.mt-1.flex-wrap
-                v-chip(
+              .item-sub-row.d-flex.align-center.gap-1.mt-1
+                v-chip.domain-chip.flex-shrink-0(
                   size="x-small"
                   color="secondary"
                   variant="tonal"
                   density="compact"
-                ) {{ getDomainLabel(item.domain) }}
-                span.text-caption.text-disabled.text-truncate(
-                  v-if="item.nowPlaying?.now_playing?.song?.title"
-                  style="max-width: 180px;"
                 )
-                  | {{ item.nowPlaying.now_playing.song.title }}
+                  span.domain-chip-text.text-truncate {{ getDomainLabel(item.domain) }}
+                span.item-desc-text.text-caption.text-disabled.text-truncate.flex-grow-1.min-width-0(
+                  v-if="item.nowPlaying?.now_playing?.song?.title || item.station?.description"
+                  :title="item.nowPlaying?.now_playing?.song?.title || item.station?.description"
+                )
+                  | {{ item.nowPlaying?.now_playing?.song?.title || item.station?.description }}
 
             //- 右側操作ボタン群 (上へ、下へ、削除)
             .item-actions.d-flex.align-center.gap-1.flex-shrink-0
@@ -125,7 +127,7 @@
               v-btn(
                 icon="mdi-arrow-up"
                 variant="tonal"
-                density="comfortable"
+                density="compact"
                 size="small"
                 :disabled="index === 0"
                 title="1つ上へ移動"
@@ -136,7 +138,7 @@
               v-btn(
                 icon="mdi-arrow-down"
                 variant="tonal"
-                density="comfortable"
+                density="compact"
                 size="small"
                 :disabled="index === stationsStore.playlist.length - 1"
                 title="1つ下へ移動"
@@ -147,7 +149,7 @@
               v-btn(
                 icon="mdi-delete-outline"
                 variant="tonal"
-                density="comfortable"
+                density="compact"
                 size="small"
                 color="error"
                 title="プレイリストから削除"
@@ -394,5 +396,37 @@ async function executeDelete() {
 .edit-item-card {
   background-color: rgb(var(--v-theme-surface));
   border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+  overflow: hidden;
+}
+
+.min-width-0 {
+  min-width: 0 !important;
+}
+
+.header-desc {
+  line-height: 1.35;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.hint-text {
+  line-height: 1.35;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.domain-chip {
+  max-width: 100px;
+}
+
+.domain-chip-text {
+  max-width: 80px;
+}
+
+.item-desc-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>

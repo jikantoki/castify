@@ -113,39 +113,17 @@
                   @click.stop="togglePlayStation(channel)"
                 )
 
-            //- 2. アルバムアートの下: 曲名・アーティスト・チャンネル情報
+            //- アルバムアートの下: 曲名・アーティスト・チャンネル情報
             .station-meta-box.pa-3
-              //- 曲名（太字・一番大きく表示）
+              //- 1. 曲名（最も大きく太字で表示）
               .song-title.font-weight-bold.text-truncate(title="曲名")
-                | {{ channel.nowPlaying?.now_playing?.song?.title || '配信中' }}
-
-              //- アーティスト名（その下に表示）
-              .song-artist.text-caption.text-medium-emphasis.text-truncate.mt-1(title="アーティスト")
-                | {{ channel.nowPlaying?.now_playing?.song?.artist || 'アーティスト不明' }}
-
-              //- チャンネル名
-              .channel-name.text-caption.text-disabled.text-truncate.mt-1
-                v-icon.mr-1(size="12") mdi-radio-tower
                 | {{ channel.station.name }}
 
-              //- フッターアクション: ドメイン & プレイリスト追加ボタン
-              .d-flex.align-center.justify-space-between.mt-2.pt-1.border-top-thin(@click.stop)
-                v-chip(
-                  size="x-small"
-                  color="primary"
-                  variant="tonal"
-                  density="compact"
-                ) {{ getDomainLabel(channel.domain) }}
+              //- 2. アーティスト名（その下に表示）
+              .song-artist.text-caption.text-medium-emphasis.text-truncate.mt-1(title="アーティスト")
+                v-icon.mr-1(size="12") mdi-radio-tower
+                | {{ channel.nowPlaying?.now_playing?.song?.artist ? `${channel.nowPlaying?.now_playing?.song?.artist} - ` : '' }} {{ channel.nowPlaying?.now_playing?.song?.title || '配信中' }}
 
-                v-btn(
-                  :icon="isInPlaylist(channel) ? 'mdi-playlist-check' : 'mdi-playlist-plus'"
-                  :color="isInPlaylist(channel) ? 'primary' : 'medium-emphasis'"
-                  variant="text"
-                  density="compact"
-                  size="small"
-                  :title="isInPlaylist(channel) ? 'プレイリストから削除' : 'プレイリストに追加'"
-                  @click.stop="togglePlaylist(channel)"
-                )
 
     //- チャンネル一覧（リスト表示）
     .explore-list-wrap.mt-2(v-else-if="filteredStations.length > 0 && viewMode === 'list'")
@@ -182,14 +160,14 @@
               )
 
           //- 2. メタデータ
-          .list-meta-box.flex-grow-1.min-width-0
+          .list-meta-box.flex-grow-1.min-width-0.mx-2
             .d-flex.align-center.gap-2
-              span.list-status-dot(:class="channel.nowPlaying?.is_online !== false ? 'online' : 'offline'" :title="channel.nowPlaying?.is_online !== false ? 'LIVE' : 'OFFLINE'")
+              span.list-status-dot.mx-2(:class="channel.nowPlaying?.is_online !== false ? 'online' : 'offline'" :title="channel.nowPlaying?.is_online !== false ? 'LIVE' : 'OFFLINE'")
               .song-title.font-weight-bold.text-truncate(title="曲名")
-                | {{ channel.nowPlaying?.now_playing?.song?.title || '配信中' }}
+                | {{ channel.station.name }}
 
             .song-artist.text-caption.text-medium-emphasis.text-truncate.mt-1(title="アーティスト")
-              | {{ channel.nowPlaying?.now_playing?.song?.artist || 'アーティスト不明' }}
+              | {{ channel.nowPlaying?.now_playing?.song?.artist ? `${channel.nowPlaying?.now_playing?.song?.artist} - ` : '' }}{{ channel.nowPlaying?.now_playing?.song?.title || '配信中' }}
 
             .d-flex.align-center.gap-2.mt-1.flex-wrap
               .channel-name.text-caption.text-disabled.text-truncate
@@ -333,7 +311,7 @@ async function togglePlaylist(channel: ChannelItem) {
 
 async function playStation(channel: ChannelItem) {
   await playerStore.playChannel(channel, stationsStore.recommendedStations)
-  router.push('/player')
+  playerStore.openFullPlayer()
 }
 
 async function togglePlayStation(channel: ChannelItem) {

@@ -68,12 +68,10 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useRouter } from 'vue-router'
 import { usePlayerStore } from '@/stores/player'
 import { useStationsStore } from '@/stores/stations'
 import { useSettingsStore } from '@/stores/settings'
 
-const router = useRouter()
 const playerStore = usePlayerStore()
 const stationsStore = useStationsStore()
 const settings = useSettingsStore()
@@ -90,7 +88,7 @@ function toggleFav() {
 }
 
 function openFullPlayer() {
-  router.push('/player')
+  playerStore.openFullPlayer()
 }
 </script>
 

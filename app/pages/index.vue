@@ -4,38 +4,20 @@
   .home-header.px-4.pt-4.pb-1
     .d-flex.align-center.justify-space-between
       .brand-wrap.d-flex.align-center.gap-2
-        img(src="/icon.png" style="height: 3em; border-radius: 9999px;")
         div
-          h1.text-h6.font-weight-bold Castify
-          p.text-caption.text-primary.font-weight-medium.mb-2 つなぐ、ひろがる、あなただけの電波。
+          h1.text-h6.font-weight-bold
+            span
+              v-icon(icon="mdi-playlist-music" color="primary")
+            span.text-subtitle-1.font-weight-bold マイプレイリスト ({{ stationsStore.playlist.length }})
 
   //- メインコンテンツ
   .home-content.px-4.pb-16
     //- Web版プロモーションバナー（PC: PWA, スマホ: アプリストア）
     AppPromotionBanner
 
-    //- カスタムドメイン管理バー（カスタムドメインがある場合）
-    .custom-domains-bar.mb-4(v-if="stationsStore.customDomains.length > 0")
-      .text-caption.text-medium-emphasis.mb-1 登録済みカスタムドメイン
-      .d-flex.flex-wrap.gap-2
-        v-chip(
-          v-for="domain in stationsStore.customDomains"
-          :key="domain"
-          size="small"
-          closable
-          variant="tonal"
-          color="secondary"
-          @click:close="confirmRemoveDomain(domain)"
-        )
-          v-icon.mr-1(size="14") mdi-server
-          | {{ getDomainLabel(domain) }}
-
     ClientOnly
       //- プレイリストヘッダー
       .d-flex.align-center.justify-space-between.mt-2.mb-3(style="flex-direction: column")
-        .d-flex.align-center.gap-2
-          v-icon(icon="mdi-playlist-music" color="primary")
-          h2.text-subtitle-1.font-weight-bold マイプレイリスト ({{ stationsStore.playlist.length }})
         .d-flex.align-center.gap-2
           //- 順番変更画面への遷移ボタン
           v-btn(
@@ -125,36 +107,12 @@
             .channel-meta-box.pa-3
               //- 1. 曲名（最も大きく太字で表示）
               .song-title.font-weight-bold.text-truncate(title="曲名")
-                | {{ item.nowPlaying?.now_playing?.song?.title || '配信中' }}
+                | {{ item.station.name }}
 
               //- 2. アーティスト名（その下に表示）
               .song-artist.text-caption.text-medium-emphasis.text-truncate.mt-1(title="アーティスト")
-                | {{ item.nowPlaying?.now_playing?.song?.artist || 'アーティスト不明' }}
-
-              //- 3. チャンネル名 & ドメイン
-              .channel-name.text-caption.text-disabled.text-truncate.mt-1
                 v-icon.mr-1(size="12") mdi-radio-tower
-                | {{ item.station.name }}
-
-              //- アクションボタン
-              .d-flex.align-center.justify-space-between.mt-2.pt-1.border-top-thin(@click.stop)
-                v-chip(
-                  size="x-small"
-                  color="secondary"
-                  variant="tonal"
-                  density="compact"
-                  class="domain-chip"
-                ) {{ getDomainLabel(item.domain) }}
-                .d-flex.align-center.gap-1
-                  v-btn(
-                    :icon="isFavorite(item) ? 'mdi-heart' : 'mdi-heart-outline'"
-                    :color="isFavorite(item) ? 'error' : 'medium-emphasis'"
-                    variant="text"
-                    density="compact"
-                    size="small"
-                    :title="isFavorite(item) ? 'お気に入り解除' : 'お気に入りに追加'"
-                    @click="toggleFavorite(item)"
-                  )
+                | {{ item.nowPlaying?.now_playing?.song?.artist ? `${item.nowPlaying?.now_playing?.song?.artist} - ` : '' }} {{ item.nowPlaying?.now_playing?.song?.title || '配信中' }}
 
       //- プレイリスト一覧（リスト表示）
       .playlist-list-wrap.mt-1(
@@ -200,24 +158,17 @@
                 span.list-status-dot(:class="item.nowPlaying?.is_online !== false ? 'online' : 'offline'" :title="item.nowPlaying?.is_online !== false ? 'LIVE' : 'OFFLINE'")
                 //- 曲名
                 .song-title.font-weight-bold.text-truncate(title="曲名")
-                  | {{ item.nowPlaying?.now_playing?.song?.title || '配信中' }}
+                  | {{ item.station.name }}
 
               //- アーティスト名
               .song-artist.text-caption.text-medium-emphasis.text-truncate.mt-1(title="アーティスト")
-                | {{ item.nowPlaying?.now_playing?.song?.artist || 'アーティスト不明' }}
+                | {{ item.nowPlaying?.now_playing?.song?.artist ? `${item.nowPlaying?.now_playing?.song?.artist} - ` : '' }}{{ item.nowPlaying?.now_playing?.song?.title || '配信中' }}
 
               //- チャンネル名 & ドメイン & リスナー
               .d-flex.align-center.gap-2.mt-1.flex-wrap
                 .channel-name.text-caption.text-disabled.text-truncate
                   v-icon.mr-1(size="12") mdi-radio-tower
-                  | {{ item.station.name }}
-                v-chip(
-                  size="x-small"
-                  color="secondary"
-                  variant="tonal"
-                  density="compact"
-                  class="domain-chip"
-                ) {{ getDomainLabel(item.domain) }}
+                  | {{ getDomainLabel(item.domain) }}
                 span.list-listeners.text-caption.text-disabled.d-none.d-sm-inline-flex.align-center.gap-1(v-if="item.nowPlaying?.listeners?.current !== undefined")
                   v-icon(size="12") mdi-account-group
                   | {{ item.nowPlaying.listeners.current }}
@@ -232,15 +183,6 @@
                 density="comfortable"
                 :title="isCurrentlyPlaying(item) && playerStore.isPlaying ? '一時停止' : '再生'"
                 @click.stop="togglePlayItem(item)"
-              )
-              v-btn(
-                :icon="isFavorite(item) ? 'mdi-heart' : 'mdi-heart-outline'"
-                :color="isFavorite(item) ? 'error' : 'medium-emphasis'"
-                variant="text"
-                density="compact"
-                size="small"
-                :title="isFavorite(item) ? 'お気に入り解除' : 'お気に入りに追加'"
-                @click="toggleFavorite(item)"
               )
 
       //- 空状態
@@ -521,7 +463,7 @@ async function toggleFavorite(item: ChannelItem) {
 
 async function playItem(item: ChannelItem) {
   await playerStore.playChannel(item, stationsStore.playlist)
-  router.push('/player')
+  playerStore.openFullPlayer()
 }
 
 async function togglePlayItem(item: ChannelItem) {

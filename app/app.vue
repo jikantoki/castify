@@ -4,8 +4,9 @@ v-app
   main(style="height: 100vh; height: 100dvh; min-width: 320px;")
     .status-bar-padding(:class="settings.hidden.isAndroid15OrHigher ? 'android-15-or-higher' : ''")
     NuxtPage(:style="settings.hidden.isAndroid15OrHigher ? 'height: calc(100vh - 40px - 16px); height: calc(100dvh - 40px - 16px);' : ''")
-    MiniPlayer(v-if="!['/player', '/tutorial'].includes($route.path)")
+    MiniPlayer(v-if="!['/player', '/tutorial'].includes($route.path) && !player.isFullPlayerOpen")
     BottomNav(v-if="!['/player', '/tutorial'].includes($route.path)")
+    FullPlayer
     .nav-bar-padding(:class="settings.hidden.isAndroid15OrHigher ? 'android-15-or-higher' : ''")
 </template>
 
@@ -15,6 +16,7 @@ import { StatusBar, Style } from '@capacitor/status-bar'
 import commonSplashVue from '@/components/common/commonSplash.vue'
 import BottomNav from '@/components/common/BottomNav.vue'
 import MiniPlayer from '@/components/player/MiniPlayer.vue'
+import FullPlayer from '@/components/player/FullPlayer.vue'
 import mixins from '@/mixins/mixins'
 import { useMyProfileStore } from '@/stores/myProfile'
 import { useSettingsStore } from '@/stores/settings'
@@ -30,6 +32,7 @@ export default {
     commonSplashVue,
     BottomNav,
     MiniPlayer,
+    FullPlayer,
   },
   mixins: [mixins],
   data() {
@@ -187,6 +190,8 @@ main {
   --accent-text-color: #ffffff;
   /** デフォルトのボーダー角の大きさ */
   --border-radius: 16px;
+
+  user-select: none;
 }
 
 button {
