@@ -4,13 +4,35 @@ import { MediaSession } from '@capgo/capacitor-media-session'
 import type { ChannelItem, AzuraCastNowPlaying } from '@/types/azuracast'
 import {
   fetchSingleStationNowPlaying,
-  fixStreamUrl,
   fixArtUrl,
   getChannelArtUrl,
 } from '@/utils/azuracast'
+import {
+  CastifyPlayer,
+  isNativePlayerAvailable,
+  resolveStreamUrl,
+  toNativeChannel,
+} from '@/utils/nativePlayer'
+import type { NativePlayerState } from '@/utils/nativePlayer'
 import { useStationsStore } from '@/stores/stations'
 
 let globalAudio: HTMLAudioElement | null = null
+let nativeBridgeInitialized = false
+// アプリ側から再生を指示した直後は、切り替え前の状態通知が届くことがあるので無視する
+let pendingNativeChannelId: string | null = null
+let pendingNativeSince = 0
+
+/**
+ * Android アプリではネイティブ再生エンジン（Media3）を使う。
+ * 画面を閉じても再生が続き、Android Auto・通知・Bluetooth からも操作できる。
+ * Web / PWA / iOS では従来どおり HTMLAudioElement を使う。
+ */
+function useNativePlayer(): boolean {
+  return isNativePlayerAvailable()
+}
+
+const STREAM_ERROR_MESSAGE =
+  'ストリームの再生に失敗しました。一時的にオフラインの可能性があります。'
 
 function getAudio(): HTMLAudioElement | null {
   if (typeof window === 'undefined') return null
@@ -128,6 +150,80 @@ export const usePlayerStore = defineStore('player', {
 
   actions: {
     /**
+     * ネイティブ再生エンジン（Android）の状態通知を購読する。
+     * Android Auto や通知から操作された場合も UI を追従させる。
+     */
+    async initNativeBridge() {
+      if (!useNativePlayer() || nativeBridgeInitialized) return
+      nativeBridgeInitialized = true
+      try {
+        await CastifyPlayer.addListener('stateChange', (state) => {
+          this.applyNativeState(state)
+        })
+        const state = await CastifyPlayer.getState()
+        this.applyNativeState(state)
+      } catch (err) {
+        console.warn('[player] native bridge init failed:', err)
+      }
+      this.startElapsedTimer()
+    },
+
+    /**
+     * ネイティブ側の状態をストアに反映
+     */
+    applyNativeState(state: NativePlayerState) {
+      if (!state || !state.connected) return
+
+      // アプリから切り替えた直後に届く「切り替え前」の通知は無視（5秒でタイムアウト）
+      if (pendingNativeChannelId) {
+        if (state.channelId === pendingNativeChannelId || Date.now() - pendingNativeSince > 5000) {
+          pendingNativeChannelId = null
+        } else {
+          return
+        }
+      }
+
+      this.isPlaying = !!state.isPlaying
+      this.isLoading = !!state.isLoading && !state.isPlaying
+      if (state.errorCode) {
+        this.error = STREAM_ERROR_MESSAGE
+        this.isLoading = false
+      } else if (state.isPlaying) {
+        this.error = null
+      }
+
+      // 車側・通知側でチャンネルが切り替わった場合
+      if (state.channelId && state.channelId !== this.currentChannel?.id) {
+        const stationsStore = useStationsStore()
+        const candidates = [
+          ...this.playQueue,
+          ...stationsStore.playlist,
+          ...stationsStore.recommendedStations,
+        ]
+        const findById = (id: string) => candidates.find((item) => item.id === id)
+        const channel = findById(state.channelId)
+        if (channel) {
+          this.currentChannel = channel
+          this.nowPlayingDetail = channel.nowPlaying || null
+          this.liveElapsed = channel.nowPlaying?.now_playing?.elapsed || 0
+          this.liveDuration = channel.nowPlaying?.now_playing?.duration || 0
+          this.currentStreamUrl = resolveStreamUrl(channel)
+
+          if (state.queueIds && state.queueIds.length > 0) {
+            const queue = state.queueIds
+              .map((id) => findById(id))
+              .filter((item): item is ChannelItem => !!item)
+            if (queue.length > 0) this.playQueue = queue
+          }
+          this.currentQueueIndex = this.playQueue.findIndex((item) => item.id === channel.id)
+
+          this.refreshNowPlayingDetail()
+          this.startPolling()
+        }
+      }
+    },
+
+    /**
      * フルスクリーンプレイヤーの表示/非表示制御
      */
     openFullPlayer() {
@@ -175,7 +271,7 @@ export const usePlayerStore = defineStore('player', {
         console.error('オーディオ再生エラー:', e)
         this.isPlaying = false
         this.isLoading = false
-        this.error = 'ストリームの再生に失敗しました。一時的にオフラインの可能性があります。'
+        this.error = STREAM_ERROR_MESSAGE
         this.updateMediaSessionPlaybackState('none')
       }
 
@@ -191,12 +287,15 @@ export const usePlayerStore = defineStore('player', {
      * @param queue 再生コンテキストのキュー（プレイリストまたはおすすめ一覧など）
      */
     async playChannel(channel: ChannelItem, queue?: ChannelItem[]) {
-      this.initAudio()
-      const audio = getAudio()
-      if (!audio) return
+      const native = useNativePlayer()
+      if (!native) {
+        this.initAudio()
+      }
+      const audio = native ? null : getAudio()
+      if (!native && !audio) return
 
-      // Android 13+ 通知表示許可のリクエスト
-      if (typeof window !== 'undefined' && 'Notification' in window) {
+      // Android 13+ 通知表示許可のリクエスト（Web 版のみ。ネイティブの再生通知は許可不要）
+      if (!native && typeof window !== 'undefined' && 'Notification' in window) {
         if (Notification.permission === 'default') {
           Notification.requestPermission().catch(() => {})
         }
@@ -221,12 +320,33 @@ export const usePlayerStore = defineStore('player', {
       }
 
       // ストリームURLの解決
-      const rawUrl =
-        channel.nowPlaying?.station?.listen_url ||
-        channel.station.listen_url ||
-        channel.station.mounts?.[0]?.url
-      const shortcode = channel.station.shortcode || String(channel.station.id)
-      const streamUrl = fixStreamUrl(rawUrl, channel.domain, shortcode)
+      const streamUrl = resolveStreamUrl(channel)
+
+      // Android: ネイティブ再生エンジンへ委譲
+      if (native) {
+        this.currentStreamUrl = streamUrl
+        const nativeQueue = this.currentQueueIndex >= 0 ? this.playQueue : [channel]
+        const startIndex = this.currentQueueIndex >= 0 ? this.currentQueueIndex : 0
+        pendingNativeChannelId = channel.id
+        pendingNativeSince = Date.now()
+        try {
+          await CastifyPlayer.setVolume({ volume: this.isMuted ? 0 : this.volume })
+          await CastifyPlayer.play({
+            queue: nativeQueue.map(toNativeChannel),
+            startIndex,
+          })
+        } catch (err: any) {
+          console.error('Native play failed:', err)
+          pendingNativeChannelId = null
+          this.isPlaying = false
+          this.isLoading = false
+          this.error = 'ストリームの再生を開始できませんでした'
+        }
+        this.startElapsedTimer()
+        await this.refreshNowPlayingDetail()
+        this.startPolling()
+        return
+      }
 
       // キャッシュバスターを付与してライブストリームの最新バッファを取得
       const cacheBustUrl = streamUrl.includes('?')
@@ -234,6 +354,7 @@ export const usePlayerStore = defineStore('player', {
         : `${streamUrl}?_cb=${Date.now()}`
 
       this.currentStreamUrl = cacheBustUrl
+      if (!audio) return
 
       try {
         audio.src = cacheBustUrl
@@ -258,8 +379,7 @@ export const usePlayerStore = defineStore('player', {
      * 再生/一時停止トグル
      */
     async togglePlay() {
-      const audio = getAudio()
-      if (!audio) return
+      if (!useNativePlayer() && !getAudio()) return
 
       if (!this.currentChannel) {
         // 再生対象が未選択の場合、プレイリストの先頭またはおすすめを再生
@@ -283,6 +403,11 @@ export const usePlayerStore = defineStore('player', {
      * 一時停止
      */
     pause() {
+      if (useNativePlayer()) {
+        this.isPlaying = false
+        CastifyPlayer.pause().catch((err) => console.warn('Native pause failed:', err))
+        return
+      }
       const audio = getAudio()
       if (audio) {
         audio.pause()
@@ -295,6 +420,24 @@ export const usePlayerStore = defineStore('player', {
      * 再生再開
      */
     async resume() {
+      if (useNativePlayer()) {
+        this.error = null
+        this.isLoading = true
+        try {
+          const state = await CastifyPlayer.resume()
+          // ネイティブ側にキューが無い（サービスが再起動した等）場合は選び直して再生
+          if (!state.channelId && this.currentChannel) {
+            await this.playChannel(this.currentChannel, this.playQueue)
+          }
+        } catch (err: any) {
+          console.error('Native resume failed:', err)
+          this.isLoading = false
+          this.isPlaying = false
+          this.error = '再開に失敗しました'
+        }
+        return
+      }
+
       const audio = getAudio()
       if (!audio) return
 
@@ -323,6 +466,12 @@ export const usePlayerStore = defineStore('player', {
      * 停止
      */
     stop() {
+      if (useNativePlayer()) {
+        this.isPlaying = false
+        this.isLoading = false
+        CastifyPlayer.stop().catch((err) => console.warn('Native stop failed:', err))
+        return
+      }
       const audio = getAudio()
       if (audio) {
         audio.pause()
@@ -339,6 +488,10 @@ export const usePlayerStore = defineStore('player', {
     setVolume(vol: number) {
       this.volume = Math.max(0, Math.min(1, vol))
       this.isMuted = this.volume === 0
+      if (useNativePlayer()) {
+        CastifyPlayer.setVolume({ volume: this.volume }).catch(() => {})
+        return
+      }
       const audio = getAudio()
       if (audio) {
         audio.volume = this.volume
@@ -350,6 +503,10 @@ export const usePlayerStore = defineStore('player', {
      */
     toggleMute() {
       this.isMuted = !this.isMuted
+      if (useNativePlayer()) {
+        CastifyPlayer.setVolume({ volume: this.isMuted ? 0 : this.volume }).catch(() => {})
+        return
+      }
       const audio = getAudio()
       if (audio) {
         audio.volume = this.isMuted ? 0 : this.volume
@@ -390,6 +547,8 @@ export const usePlayerStore = defineStore('player', {
      * Media Session API のハンドラーを登録（ブラウザ & ネイティブ両対応）
      */
     setupMediaSessionActionHandlers() {
+      // Android ではネイティブ側（Media3）が通知・ロック画面・Android Auto を担当する
+      if (useNativePlayer()) return
       // Web MediaSession
       if (typeof window !== 'undefined' && 'mediaSession' in navigator) {
         try {
@@ -441,6 +600,7 @@ export const usePlayerStore = defineStore('player', {
      * Media Session メタデータの更新
      */
     updateMediaSession() {
+      if (useNativePlayer()) return
       const title = this.currentSongTitle
       const artist = this.currentArtist || this.currentChannel?.station?.name || 'Castify'
       const album = this.currentAlbum || this.currentChannel?.station?.name || 'Castify Radio'
@@ -490,6 +650,7 @@ export const usePlayerStore = defineStore('player', {
      * MediaSession の再生状態を更新
      */
     updateMediaSessionPlaybackState(state: 'playing' | 'paused' | 'none') {
+      if (useNativePlayer()) return
       // Web MediaSession
       if (typeof window !== 'undefined' && 'mediaSession' in navigator) {
         try {

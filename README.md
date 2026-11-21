@@ -47,6 +47,7 @@
    - [Web アセットの同期](#web-アセットの同期)
    - [Android 実機・エミュレータでのデバッグ](#android-実機エミュレータでのデバッグ)
    - [Android 15 Edge-to-Edge 仕様](#android-15-edge-to-edge-仕様)
+   - [ネイティブ再生 & Android Auto 対応](#ネイティブ再生--android-auto-対応)
 9. [クリエイター・運営情報](#クリエイター運営情報)
 10. [ライセンス](#ライセンス)
 
@@ -276,6 +277,31 @@ Castify は Android 15 で強制適用される Edge-to-Edge 仕様に対応し�
 
 - ステータスバーおよびナビゲーションバーの背後までコンテンツを描画しつつ、セーフエリア（ノッチ・カメラ切り欠き）のパディングを自動計算してレイアウト崩れを防止します。
 - 開発者オプション（`設定 > 開発者オプション`）から、ステータスバーノッチの表示シミュレーションを切り替えて動作確認が可能です。
+
+### ネイティブ再生 & Android Auto 対応
+
+Android アプリでは、音声の再生を WebView（HTMLAudioElement）ではなくネイティブの **Media3 ExoPlayer** で行います。Web / PWA 版はこれまでどおり HTMLAudioElement で再生します。
+
+- **Android Auto**: 車の画面に「マイプレイリスト」「おすすめ」の 2 タブを表示し、各チャンネルの現在の曲名・アートワークも表示します。再生画面には再生中の曲情報が出ます。
+- **音声コマンド**: 「OK Google、Castify で ○○ を再生」で局名・曲名・アーティスト名から検索して再生します（Android Auto 上でも利用可）。
+- **バックグラウンド再生**: アプリの画面を閉じても再生が続き、通知・ロック画面・Bluetooth ボタンから操作できます。
+- マイプレイリストはアプリ起動中にネイティブ側へ自動同期されるため、スマホでアプリを開いていない状態でも車から再生できます。
+
+| ファイル | 役割 |
+| :--- | :--- |
+| `android/.../media/CastifyPlaybackService.java` | 再生サービス（ExoPlayer + MediaLibrarySession）。Android Auto の一覧・音声検索・曲情報の定期更新 |
+| `android/.../media/CastifyPlayerPlugin.java` | WebView から再生サービスを操作する Capacitor プラグイン（`CastifyPlayer`） |
+| `android/.../media/ChannelRepository.java` | プレイリスト・おすすめの保存（SharedPreferences） |
+| `android/.../media/AzuraCastClient.java` | ネイティブ側の AzuraCast Now Playing API クライアント |
+| `android/.../media/ArtworkProvider.java` | Android Auto 向けにアートワークを `content://` で提供 |
+| `app/utils/nativePlayer.ts` | JS 側のブリッジ定義 |
+| `app/plugins/stations-native-sync.client.ts` | プレイリストのネイティブ同期と、車側操作の UI 反映 |
+
+#### Android Auto での動作確認（DHU）
+
+1. スマホの Android Auto 設定で「デベロッパー設定」を有効にし、「提供元不明のアプリ」を ON にします（Play ストア以外からインストールしたアプリを車に表示するため）。
+2. Android Auto のメニューから「ヘッドユニット サーバーを起動」を選びます。
+3. PC で `adb forward tcp:5277 tcp:5277` を実行し、Android SDK の `extras/google/auto/desktop-head-unit` を起動します。
 
 ---
 

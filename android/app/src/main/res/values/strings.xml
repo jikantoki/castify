@@ -4,4 +4,12 @@
     <string name="title_activity_main">Castify</string>
     <string name="package_name">xyz.enoki.castify</string>
     <string name="custom_url_scheme">xyz.enoki.castify</string>
+
+    <!-- Android Auto -->
+    <string name="auto_tab_playlist">マイプレイリスト</string>
+    <string name="auto_tab_recommended">おすすめ</string>
+    <string name="auto_playlist_empty_title">チャンネルがまだありません</string>
+    <string name="auto_playlist_empty_subtitle">停車中にスマホのCastifyでマイプレイリストに追加してください</string>
+    <string name="auto_recommended_empty_title">おすすめを読み込めませんでした</string>
+    <string name="auto_recommended_empty_subtitle">通信状況を確認して、もう一度開いてください</string>
 </resources>
